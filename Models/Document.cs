@@ -1,7 +1,8 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace WebPareser.Models {
+namespace WebParser.Models
+{
 	public class Document {
 		[Required]
 		public string? Id {get;set;}

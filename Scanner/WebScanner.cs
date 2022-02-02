@@ -14,13 +14,24 @@ namespace WebPareser.Scanner {
 			_configuration = Configuration.Default.WithDefaultLoader();
 			_address = "http://goreftinsky.ru";
 			_browserContext = BrowsingContext.New(_configuration);
-			var task = _browserContext.OpenAsync(_address);
-			_document = task.Result;
-			_
+			
 
 		}
 
-		public void ScanPage() {
+		public void ScanAllPageLinks()
+        {
+
+        }
+
+		public void ScanPageLinks(string path = "")
+        {
+
+        }
+
+		public void ScanPage(string path = "/") {
+			var task = _browserContext.OpenAsync(_address + path);
+			_document = task.Result;
+
 			string query = "#header2_right a";
 			IHtmlCollection<IElement> headers = _document.QuerySelectorAll(query);
 			foreach(IElement header in headers) {
@@ -30,21 +41,18 @@ namespace WebPareser.Scanner {
 
 		}
 
-		public void ScanSite() {
+		public void Scan(string page = "/") {
 
 		}
 
-		private void ScanDoc() {
+		public void ScanPageDoc(string page = "/") {
 
 		}
 
-		public void ReadContent() {
+		public void ScanPageFiles(string page = "/")
+        {
 
-		}
-
-		public void ReadContent(string page) {
-
-		}
+        }
 
 	}
 }
