@@ -3,6 +3,7 @@ using System;
 using AngleSharp;
 using WebPareser.Scanner;
 using WebParser.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace WebPareser {
 	class Program {
@@ -10,9 +11,20 @@ namespace WebPareser {
 		private static DatabaseContext? _context;
 		
 		static void Main() {
-            WebScanner scanner = new WebScanner(new DatabaseContext());
-            scanner.ScanPage("/");
+			_context = new DatabaseContext();
 
+			//WebScanner scanner = new WebScanner(_context);
+            //scanner.ScanPageGroups();
+
+			List<PageGroup> pageGroups = _context.PageGroups.Include(o => o.Pages).ToList();
+
+			foreach(PageGroup pg in pageGroups)
+            {
+				Console.WriteLine(pg.Name);
+				foreach(Page p in pg.Pages)
+					Console.WriteLine("\t" + p.Name);
+				Console.WriteLine();
+            }
 			
 		}
 	}

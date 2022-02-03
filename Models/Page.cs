@@ -12,19 +12,14 @@ namespace WebParser.Models
         [Required]
         public string? Name { get; set; }
 
-        [Required]
         public string? NormalizedName { get; set; }
 
-        [Required]
         public string? Meta { get; set; }
 
-        [Required]
         public string? Description { get; set; }
 
-        [Required]
         public string? Content { get; set; }
 
-        [Required]
         public string? LegasyContent { get; set; }
 
         [Required]
@@ -50,7 +45,7 @@ namespace WebParser.Models
 		[NotMapped]
 		public Page[]? ChildPages { get; set; }
 
-        public int? GroupId { get; set; }
+        public string? GroupId { get; set; }
 
         public PageGroup PageGroup { get; set; }
 

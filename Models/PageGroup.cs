@@ -19,7 +19,7 @@ namespace WebParser.Models
         [Required]
         public DateTime Updated { get; set; }
 
-        public Page[] Pages { get; set; }
+        public List<Page> Pages { get; set; }
 
     }
 }
