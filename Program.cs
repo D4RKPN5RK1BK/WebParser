@@ -4,28 +4,52 @@ using AngleSharp;
 using WebPareser.Scanner;
 using WebParser.Models;
 using Microsoft.EntityFrameworkCore;
+using AngleSharp.Dom;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace WebPareser {
 	class Program {
 
-		private static DatabaseContext? _context;
+		private static DatabaseContext? context;
 		
 		static void Main() {
-			_context = new DatabaseContext();
+			context = new DatabaseContext();
 
-			//WebScanner scanner = new WebScanner(_context);
-            //scanner.ScanPageGroups();
+            Console.WriteLine("Отчистка базы данных");
+            context.Pages.RemoveRange(context.Pages);
+            context.PageGroups.RemoveRange(context.PageGroups);
+            context.SaveChanges();
+            Console.WriteLine("Отчистка базы данных завершена");
 
-			List<PageGroup> pageGroups = _context.PageGroups.Include(o => o.Pages).ToList();
+            WebScanner scanner = new WebScanner();
 
-			foreach(PageGroup pg in pageGroups)
-            {
-				Console.WriteLine(pg.Name);
-				foreach(Page p in pg.Pages)
-					Console.WriteLine("\t" + p.Name);
-				Console.WriteLine();
-            }
-			
-		}
-	}
+            Console.WriteLine("Сканирование начальной страницы");
+            List<PageGroup> pageGroups = scanner.ScanMainPage();
+            Console.WriteLine("Сканирование начальной страницы завершено");
+
+            Console.WriteLine("Сохранение данных в БД");
+            context.AddRange(pageGroups);
+            context.SaveChanges();
+            Console.WriteLine("Сохранение данных в БД завершено");
+
+            List<Page> pages = context.Pages.ToList();
+
+            Console.WriteLine("Сканирование вложенных страниц");
+            pages = scanner.ScanPagesRangeBranch(pages);
+            Console.WriteLine("Сканирование вложенных страниц завершенно");
+
+
+            List<Page> dbPages = context.Pages.ToList();
+            foreach (Page page in dbPages)
+                pages.RemoveAll(o => o == page);
+
+            Console.WriteLine("Сохранение данных в БД");
+            context.Pages.AddRange(pages);
+            context.SaveChanges();
+            Console.WriteLine("Сохранение данных в БД завершено");
+
+
+        }
+    }
 }

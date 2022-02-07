@@ -11,8 +11,8 @@ using WebPareser.Data;
 namespace WebParser.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20220203190148_PageGroupRequiredUpdate")]
-    partial class PageGroupRequiredUpdate
+    [Migration("20220205194324_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -95,6 +95,12 @@ namespace WebParser.Migrations
                     b.Property<string>("LegasyContent")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("LegasyLink")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LegasyPath")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Meta")
                         .HasColumnType("TEXT");
 
@@ -127,11 +133,11 @@ namespace WebParser.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
+                    b.Property<DateTime>("LastModified")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("Updated")
+                    b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");

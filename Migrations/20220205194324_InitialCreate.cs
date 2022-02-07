@@ -16,7 +16,7 @@ namespace WebParser.Migrations
                     Id = table.Column<string>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
                     Created = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Updated = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    LastModified = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -29,18 +29,20 @@ namespace WebParser.Migrations
                 {
                     Id = table.Column<string>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
-                    NormalizedName = table.Column<string>(type: "TEXT", nullable: false),
-                    Meta = table.Column<string>(type: "TEXT", nullable: false),
-                    Description = table.Column<string>(type: "TEXT", nullable: false),
-                    Content = table.Column<string>(type: "TEXT", nullable: false),
-                    LegasyContent = table.Column<string>(type: "TEXT", nullable: false),
+                    NormalizedName = table.Column<string>(type: "TEXT", nullable: true),
+                    Meta = table.Column<string>(type: "TEXT", nullable: true),
+                    Description = table.Column<string>(type: "TEXT", nullable: true),
+                    Content = table.Column<string>(type: "TEXT", nullable: true),
+                    LegasyLink = table.Column<string>(type: "TEXT", nullable: true),
+                    LegasyContent = table.Column<string>(type: "TEXT", nullable: true),
+                    LegasyPath = table.Column<string>(type: "TEXT", nullable: true),
                     IsLegasy = table.Column<bool>(type: "INTEGER", nullable: false),
                     IsArchive = table.Column<bool>(type: "INTEGER", nullable: false),
                     Created = table.Column<DateTime>(type: "TEXT", nullable: false),
                     LastModified = table.Column<DateTime>(type: "TEXT", nullable: false),
                     IsConfirmed = table.Column<bool>(type: "INTEGER", nullable: false),
                     ParentPageId = table.Column<int>(type: "INTEGER", nullable: true),
-                    GroupId = table.Column<int>(type: "INTEGER", nullable: true),
+                    GroupId = table.Column<string>(type: "TEXT", nullable: true),
                     PageGroupId = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>

@@ -11,8 +11,8 @@ using WebPareser.Data;
 namespace WebParser.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20220203184747_PageGroups")]
-    partial class PageGroups
+    [Migration("20220206145522_Page_PageGroup_nullable")]
+    partial class Page_PageGroup_nullable
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -67,7 +67,6 @@ namespace WebParser.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Content")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("Created")
@@ -75,11 +74,9 @@ namespace WebParser.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("GroupId")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsArchive")
@@ -96,11 +93,15 @@ namespace WebParser.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("LegasyContent")
-                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LegasyLink")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LegasyPath")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Meta")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -108,15 +109,13 @@ namespace WebParser.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("NormalizedName")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PageGroupId")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("ParentPageId")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("ParentPageId")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -133,11 +132,11 @@ namespace WebParser.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
+                    b.Property<DateTime>("LastModified")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("Updated")
+                    b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -160,9 +159,7 @@ namespace WebParser.Migrations
                 {
                     b.HasOne("WebParser.Models.PageGroup", "PageGroup")
                         .WithMany("Pages")
-                        .HasForeignKey("PageGroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PageGroupId");
 
                     b.Navigation("PageGroup");
                 });

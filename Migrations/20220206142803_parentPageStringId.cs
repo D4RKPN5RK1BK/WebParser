@@ -4,16 +4,15 @@
 
 namespace WebParser.Migrations
 {
-    public partial class PageGroups : Migration
+    public partial class parentPageStringId : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<string>(
-                name: "GroupId",
+                name: "ParentPageId",
                 table: "Pages",
                 type: "TEXT",
-                nullable: false,
-                defaultValue: "",
+                nullable: true,
                 oldClrType: typeof(int),
                 oldType: "INTEGER",
                 oldNullable: true);
@@ -22,12 +21,13 @@ namespace WebParser.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<int>(
-                name: "GroupId",
+                name: "ParentPageId",
                 table: "Pages",
                 type: "INTEGER",
                 nullable: true,
                 oldClrType: typeof(string),
-                oldType: "TEXT");
+                oldType: "TEXT",
+                oldNullable: true);
         }
     }
 }

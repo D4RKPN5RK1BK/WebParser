@@ -2,113 +2,85 @@ using WebPareser.Data;
 using AngleSharp;
 using AngleSharp.Dom;
 using WebParser.Models;
+using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
 
 namespace WebPareser.Scanner {
+	
 	public class WebScanner {
-		private Dictionary<bool, Page> pageCheckList;
-		private List<PageGroup> pageGroups;
-		private DatabaseContext _databaseContext;
-		private IConfiguration _configuration;
-		private IBrowsingContext _browserContext;
-		private string _address;
-		private IDocument _document;
-		public WebScanner(DatabaseContext databaseContext) {
-			_databaseContext = databaseContext;
-			_configuration = Configuration.Default.WithDefaultLoader();
-			_address = "http://goreftinsky.ru";
-			_browserContext = BrowsingContext.New(_configuration);
-			_document = _browserContext.OpenAsync(_address).Result;
+
+		private IConfiguration configuration;
+		private IBrowsingContext browserContext;
+		private string address;
+		private IDocument document;
+
+		private const string HEADER_PAGES_QUERY = "#header2_right a";
+		private const string PAGE_GROUPS_QUERY = "#header3 div div";
+
+		private const string MAIN_PAGE = "/";
+
+		public WebScanner() {
+			configuration = Configuration.Default.WithDefaultLoader();
+			address = "http://goreftinsky.ru";
+			browserContext = BrowsingContext.New(configuration);
+			document = browserContext.OpenAsync(address).Result;
 		}
 
-		public void ScanAllPageLinks()
+		public List<PageGroup> ScanMainPage()
         {
-			pageCheckList = new Dictionary<bool, Page>();
-        }
+			document = browserContext.OpenAsync(address + MAIN_PAGE).Result;
+			string documentPath = Regex.Match(document.Url, @"^\S*/").Value;
+			List<PageGroup> pageGroups = new List<PageGroup>();
 
-		public void ScanPageGroups()
-        {
+			// Top menu section
+			var headerGroup = new PageGroup("ÂÅÐÕÍÅÅ ÌÅÍÞ");
+			var headerLinks = document.QuerySelectorAll(HEADER_PAGES_QUERY);
+
+			foreach (var link in headerLinks)
+				headerGroup.Pages.Add(new Page(link.TextContent, documentPath + link.GetAttribute("href")));
 			
-			pageGroups = new List<PageGroup>();
-			pageGroups.Add(new PageGroup()
-			{
-				Id = Guid.NewGuid().ToString(),
-				Name = "Âåðõíåå ìåíþ",
-				Created = DateTime.Now,
-				Updated = DateTime.Now
-			}
-			);
+			pageGroups.Add(headerGroup);
 
-			string query = "#header3 div div";
-			IHtmlCollection<IElement> divs = _document.QuerySelectorAll(query);
+			// Bottom menu section
+			var divs = document.QuerySelectorAll(PAGE_GROUPS_QUERY);
+			foreach (var div in divs)
+				if (div.GetAttribute("id") == "zag")
+					pageGroups.Add(new PageGroup(div.TextContent));
+				else
+					foreach(var link in div.Children)
+						pageGroups.Last().Pages.Add(new Page(link.TextContent, documentPath + link.GetAttribute("href")));
 
-			for (int i = 0; i < divs.Count(); i+=2)
-            {
-				if(!_databaseContext.PageGroups.Any(o => o.Name == divs[i].TextContent))
-                {
-					PageGroup tempGroup = new PageGroup()
-					{
-						Id = Guid.NewGuid().ToString(),
-						Name = divs[i].TextContent,
-						Created = DateTime.Now,
-						Updated = DateTime.Now,
-						Pages = new List<Page>()
-					};
-
-
-					foreach (var n in divs[i + 1].ChildNodes)
-					{
-						if (!_databaseContext.Pages.Any(o => o.Name == n.TextContent))
-                        {
-							tempGroup.Pages.Add(new Page()
-							{
-								Id = Guid.NewGuid().ToString(),
-								Name = n.TextContent,
-								Created = DateTime.Now,
-								LastModified = DateTime.Now
-							});
-						}
-						
-					}
-
-					pageGroups.Add(tempGroup);
-				}
-				
-			}
-
-			_databaseContext.AddRange(pageGroups);
-			_databaseContext.SaveChanges();
-
+			return pageGroups;
         }
 
-		public void ScanPageLinks(string path = "")
+		public List<Page> ScanPage(Page page)
         {
+			document = browserContext.OpenAsync(page.LegasyURL).Result;
+			var links = document.QuerySelectorAll(HEADER_PAGES_QUERY);
 
+			foreach (var link in links)
+				page.ChildPages.Add(new Page(link.TextContent, page.LegasyPath + link.GetAttribute("html"), page.Id));
+
+			return page.ChildPages;
         }
 
-		public void ScanPage(string path = "/") {
+		public List<Page>ScanPagesRangeBranch(List<Page> pages)
+        {
+			var tempPages = new List<Page>();
+
+			foreach(var p in pages)
+				tempPages.AddRange(ScanPage(p)
+					.Where(o => !pages.Any(n => n.Name == o.Name) && !tempPages.Any(n => n.Name == o.Name)));
+
+			foreach (var p in tempPages)
+				Console.WriteLine("\t" + p.Name);
+
+			pages.AddRange(tempPages);
 			
+			if (tempPages.Count > 0)
+				pages.AddRange(ScanPagesRangeBranch(pages));
 
-			string query = "#header2_right a";
-			IHtmlCollection<IElement> headers = _document.QuerySelectorAll(query);
-			foreach(IElement header in headers) {
-				Console.WriteLine(header.TextContent);
-				Console.WriteLine(header.Attributes["href"]?.TextContent);
-			}
-
+			return pages;
 		}
-
-		public void Scan(string page = "/") {
-
-		}
-
-		public void ScanPageDoc(string page = "/") {
-
-		}
-
-		public void ScanPageFiles(string page = "/")
-        {
-
-        }
-
 	}
 }
