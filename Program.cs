@@ -7,49 +7,87 @@ using Microsoft.EntityFrameworkCore;
 using AngleSharp.Dom;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
+using WebParser.Writer;
 
 namespace WebPareser {
 	class Program {
 
 		private static DatabaseContext? context;
+        private static ILoggerFactory loggerFactory;
+        private static ILogger logger;
 		
 		static void Main() {
 			context = new DatabaseContext();
 
-            Console.WriteLine("Отчистка базы данных");
+            loggerFactory = LoggerFactory.Create(config => {
+                config.AddConsole();
+            });
+            logger = loggerFactory.CreateLogger<Program>();
+
+            logger.LogInformation("Отчистка базы данных");
             context.Pages.RemoveRange(context.Pages);
             context.PageGroups.RemoveRange(context.PageGroups);
             context.SaveChanges();
-            Console.WriteLine("Отчистка базы данных завершена");
+            logger.LogInformation("Отчистка базы данных завершена");
 
-            WebScanner scanner = new WebScanner();
+            WebScanner scanner = new WebScanner(logger);
 
-            Console.WriteLine("Сканирование начальной страницы");
+            logger.LogInformation("Сканирование начальной страницы");
             List<PageGroup> pageGroups = scanner.ScanMainPage();
-            Console.WriteLine("Сканирование начальной страницы завершено");
+            logger.LogInformation("Сканирование начальной страницы завершено");
 
-            Console.WriteLine("Сохранение данных в БД");
+            logger.LogInformation("Сохранение данных в БД");
             context.AddRange(pageGroups);
             context.SaveChanges();
-            Console.WriteLine("Сохранение данных в БД завершено");
+            logger.LogInformation("Сохранение данных в БД завершено");
 
             List<Page> pages = context.Pages.ToList();
 
-            Console.WriteLine("Сканирование вложенных страниц");
-            pages = scanner.ScanPagesRangeBranch(pages);
-            Console.WriteLine("Сканирование вложенных страниц завершенно");
+            logger.LogInformation("Сканирование вложенных страниц");
+            scanner.ScanPagesRangeBranch(pages);
+            logger.LogInformation("Сканирование вложенных страниц завершенно");
 
 
             List<Page> dbPages = context.Pages.ToList();
             foreach (Page page in dbPages)
                 pages.RemoveAll(o => o == page);
 
-            Console.WriteLine("Сохранение данных в БД");
+            logger.LogInformation("Сохранение данных в БД");
             context.Pages.AddRange(pages);
             context.SaveChanges();
-            Console.WriteLine("Сохранение данных в БД завершено");
+            logger.LogInformation("Сохранение данных в БД завершено");
+
+            logger.LogInformation("Взятие данных из базы");
+            List<PageGroup> pageGroupsList = context.PageGroups.Include(o => o.Pages).OrderBy(o => o.Name).ToList();
+            foreach (var pg in pageGroupsList)
+                foreach (var p in pg.Pages)
+                    p.ChildPages = AddSubpages(p);
+            logger.LogInformation("Взятие данных из базы завершено");
 
 
+
+
+            logger.LogInformation("Сортировка данных");
+
+            PageGroup um = pageGroupsList.FirstOrDefault(o => o.Name == "ВЕРХНЕЕ МЕНЮ");
+            pageGroupsList.Remove(um);
+            pageGroupsList.Insert(0, um);
+
+            logger.LogInformation("Сортировка данных завершена");
+
+            FileWriter writer = new FileWriter();
+            writer.CreateHTMLMap(pageGroupsList);
+        }
+
+        public static List<Page> AddSubpages(Page page)
+        {
+            List<Page> pages = context.Pages.Where(o => o.ParentPageId == page.Id).ToList();
+
+            foreach (Page p in pages)
+                p.ChildPages = AddSubpages(p);
+
+            return pages;
         }
     }
 }

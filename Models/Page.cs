@@ -66,8 +66,12 @@ namespace WebParser.Models
 
         public List<Document>? PageFiles { get; set; }
 
+        [NotMapped]
+        public bool DeadEnd { get; set; }
+
         public Page()
         {
+            DeadEnd = false;
             Id = Guid.NewGuid().ToString();
             Created = DateTime.Now;
             LastModified = DateTime.Now;
@@ -78,6 +82,7 @@ namespace WebParser.Models
         public Page(string name, string legasyURL = "", string parentPageId = null, DateTime? created = null, DateTime? lastModified = null, string? content = null, string? legasyContent = null, string? description = null)
         {
             Id = Guid.NewGuid().ToString();
+            DeadEnd = false;
             Name = name;
             NormalizedName = name.Normalize().ToUpper();
             LegasyURL = legasyURL;

@@ -4,6 +4,7 @@ using AngleSharp.Dom;
 using WebParser.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 
 namespace WebPareser.Scanner {
 	
@@ -12,6 +13,7 @@ namespace WebPareser.Scanner {
 		private IConfiguration configuration;
 		private IBrowsingContext browserContext;
 		private string address;
+		private ILogger logger;
 		private IDocument document;
 
 		private const string HEADER_PAGES_QUERY = "#header2_right a";
@@ -19,7 +21,8 @@ namespace WebPareser.Scanner {
 
 		private const string MAIN_PAGE = "/";
 
-		public WebScanner() {
+		public WebScanner(ILogger logger = null) {
+			this.logger = logger;
 			configuration = Configuration.Default.WithDefaultLoader();
 			address = "http://goreftinsky.ru";
 			browserContext = BrowsingContext.New(configuration);
@@ -55,32 +58,50 @@ namespace WebPareser.Scanner {
 
 		public List<Page> ScanPage(Page page)
         {
+			List<Page> pages = new List<Page>();
+			
+			if (page.DeadEnd)
+				logger.LogWarning("Повтороно сканируется страница \t" + page.Name);
+			else
+				logger.LogInformation("Сканируется страница \t" + page.Name);
+
 			document = browserContext.OpenAsync(page.LegasyURL).Result;
 			var links = document.QuerySelectorAll(HEADER_PAGES_QUERY);
 
 			foreach (var link in links)
-				page.ChildPages.Add(new Page(link.TextContent, page.LegasyPath + link.GetAttribute("html"), page.Id));
+            {
+                Page p = new Page(link.TextContent, page.LegasyPath + link.GetAttribute("href"), page.Id);
 
-			return page.ChildPages;
-        }
+				if (link.GetAttribute("href").Contains(".ru"))
+					p.LegasyURL = link.GetAttribute("href");
 
-		public List<Page>ScanPagesRangeBranch(List<Page> pages)
-        {
-			var tempPages = new List<Page>();
+				while (Regex.IsMatch(p.LegasyURL, @"[^\/]*\/\.\.\/"))
+					p.LegasyURL = p.LegasyURL.Replace(Regex.Match(p.LegasyURL, @"[^\/]*\/\.\.\/").Value, "");
 
-			foreach(var p in pages)
-				tempPages.AddRange(ScanPage(p)
-					.Where(o => !pages.Any(n => n.Name == o.Name) && !tempPages.Any(n => n.Name == o.Name)));
-
-			foreach (var p in tempPages)
-				Console.WriteLine("\t" + p.Name);
-
-			pages.AddRange(tempPages);
-			
-			if (tempPages.Count > 0)
-				pages.AddRange(ScanPagesRangeBranch(pages));
+				pages.Add(p);
+            }
 
 			return pages;
+        }
+
+		public void ScanPagesRangeBranch(List<Page> pages)
+        {
+			var tempPages =new List<Page>();
+			foreach(var page in pages.Where(o => !o.DeadEnd))
+			{
+				tempPages.AddRange(ScanPage(page)
+					.Where(o => !pages.Any(n => n.Name == o.Name && n.LegasyURL == o.LegasyURL)));
+				page.DeadEnd = true;
+            }
+
+			foreach (var tp in tempPages)
+				logger.LogInformation("Добавлена страница \t" + tp.Name);
+
+			pages.AddRange(tempPages);
+			if (tempPages.Count > 0)
+				ScanPagesRangeBranch(pages);
+
+			
 		}
 	}
 }

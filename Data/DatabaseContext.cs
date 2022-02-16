@@ -17,10 +17,11 @@ namespace WebPareser.Data
 		
 		protected override void OnConfiguring(DbContextOptionsBuilder builder) {
 			
-			SpecialFolder folder = Environment.SpecialFolder.LocalApplicationData;
+			SpecialFolder folder = Environment.SpecialFolder.Desktop;
 			string path = Environment.GetFolderPath(folder);
 
-
+			if (!Directory.Exists(path + "/WebParser"))
+				Directory.CreateDirectory(path + "/WebParser");
 
 			DbPath = Path.Join(path, "WebParser\\Database.db");
 
