@@ -2,10 +2,11 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.RegularExpressions;
+using WebParser.Interfaces;
 
 namespace WebParser.Models
 {
-    public class Page
+    public class Page : IHeirarchy<Page>
     {
         private string _legasyURL;
 
@@ -107,5 +108,10 @@ namespace WebParser.Models
                 return list;
             }
         }
+
+        [NotMapped]
+        public Page Parent { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        [NotMapped]
+        public IEnumerable<Page> Childrens { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
     }
 }

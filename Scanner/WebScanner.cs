@@ -16,8 +16,9 @@ namespace WebPareser.Scanner {
 		private ILogger logger;
 		private IDocument document;
 
-		private const string HEADER_PAGES_QUERY = "#header2_right a";
-		private const string PAGE_GROUPS_QUERY = "#header3 div div";
+		public const string HEADER_PAGES = "#header2_right a";
+		public const string PAGE_GROUPS = "#header3 div div";
+		public const string PAGE_CONTENT_LINKS = ".content .page-links a";
 
 		private const string MAIN_PAGE = "/";
 
@@ -29,6 +30,10 @@ namespace WebPareser.Scanner {
 			document = browserContext.OpenAsync(address).Result;
 		}
 
+		/// <summary>
+		/// Сканирование ссылок на главной странице, определяет группы страниц, и задает начальные страницы для дальнейшего поиска
+		/// </summary>
+		/// <returns>Группы страниц внутри которых находятся все ссылки на главной странице</returns>
 		public List<PageGroup> ScanMainPage()
         {
 			document = browserContext.OpenAsync(address + MAIN_PAGE).Result;
@@ -37,7 +42,7 @@ namespace WebPareser.Scanner {
 
 			// Top menu section
 			var headerGroup = new PageGroup("ВЕРХНЕЕ МЕНЮ");
-			var headerLinks = document.QuerySelectorAll(HEADER_PAGES_QUERY);
+			var headerLinks = document.QuerySelectorAll(HEADER_PAGES);
 
 			foreach (var link in headerLinks)
 				headerGroup.Pages.Add(new Page(link.TextContent, documentPath + link.GetAttribute("href")));
@@ -45,7 +50,7 @@ namespace WebPareser.Scanner {
 			pageGroups.Add(headerGroup);
 
 			// Bottom menu section
-			var divs = document.QuerySelectorAll(PAGE_GROUPS_QUERY);
+			var divs = document.QuerySelectorAll(PAGE_GROUPS);
 			foreach (var div in divs)
 				if (div.GetAttribute("id") == "zag")
 					pageGroups.Add(new PageGroup(div.TextContent));
@@ -56,17 +61,22 @@ namespace WebPareser.Scanner {
 			return pageGroups;
         }
 
-		public List<Page> ScanPage(Page page)
+		/// <summary>
+		/// Сканирует все ссылки в верхнем меню для выбраной страницы
+		/// </summary>
+		/// <param name="page">Страница для сканирования ссылок из верхнего меню</param>
+		/// <returns>Возвращает группу дочерних страниц</returns>
+		public List<Page> ScanPage(Page page, string query = HEADER_PAGES)
         {
 			List<Page> pages = new List<Page>();
 			
 			if (page.DeadEnd)
-				logger.LogWarning("Повтороно сканируется страница \t" + page.Name);
+				logger.LogWarning("\t" + page.Name);
 			else
-				logger.LogInformation("Сканируется страница \t" + page.Name);
+				logger.LogInformation("\t" + page.Name);
 
 			document = browserContext.OpenAsync(page.LegasyURL).Result;
-			var links = document.QuerySelectorAll(HEADER_PAGES_QUERY);
+			IHtmlCollection<IElement> links = document.QuerySelectorAll(query);
 
 			foreach (var link in links)
             {
@@ -84,12 +94,16 @@ namespace WebPareser.Scanner {
 			return pages;
         }
 
-		public void ScanPagesRangeBranch(List<Page> pages)
+		/// <summary>
+		/// Сканирует полное древо ссылок верхнего меню для введеных страниц. Все внутренние ссылки добавляются к введенному массиву.
+		/// </summary>
+		/// <param name="pages">Группа страниц для сканировения дрвева ссылок</param>
+		public void ScanPagesLinksTree(List<Page> pages, string query = HEADER_PAGES)
         {
 			var tempPages =new List<Page>();
 			foreach(var page in pages.Where(o => !o.DeadEnd))
 			{
-				tempPages.AddRange(ScanPage(page)
+				tempPages.AddRange(ScanPage(page, query)
 					.Where(o => !pages.Any(n => n.Name == o.Name && n.LegasyURL == o.LegasyURL)));
 				page.DeadEnd = true;
             }
@@ -99,9 +113,8 @@ namespace WebPareser.Scanner {
 
 			pages.AddRange(tempPages);
 			if (tempPages.Count > 0)
-				ScanPagesRangeBranch(pages);
+				ScanPagesLinksTree(pages, query);
 
-			
 		}
 	}
 }

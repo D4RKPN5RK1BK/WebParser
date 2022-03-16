@@ -9,6 +9,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using WebParser.Writer;
+using CommandLine;
+using WebParser.CommandLine;
 
 namespace WebPareser {
 	class Program {
@@ -17,8 +19,20 @@ namespace WebPareser {
         private static ILoggerFactory loggerFactory;
         private static ILogger logger;
 		
-		static void Main() {
-			context = new DatabaseContext();
+		static void Main(string[] args) {
+
+            Parser.Default.ParseArguments<DisplayAllPages, CreateHTMLMap, DisplayPageData, ScanAllPagesLinks, ScanPageLinks>(args)
+                .MapResult(
+                    (DisplayAllPages options) => RunDisplayAllPages(options),
+                    (CreateHTMLMap options) => RunCreateHTMLMap(options),
+                    (DisplayPageData options) => RunDisplayPageData(options),
+                    (ScanAllPagesLinks options) => RunScanAllPagesLinks(options),
+                    (ScanPageLinks options) => RunScanPageLinks(options),
+                    error => 1
+                );
+			
+            
+            /*context = new DatabaseContext();
 
             loggerFactory = LoggerFactory.Create(config => {
                 config.AddConsole();
@@ -45,9 +59,14 @@ namespace WebPareser {
             List<Page> pages = context.Pages.ToList();
 
             logger.LogInformation("Сканирование вложенных страниц");
-            scanner.ScanPagesRangeBranch(pages);
+            scanner.ScanPagesLinksTree(pages, WebScanner.HEADER_PAGES);
             logger.LogInformation("Сканирование вложенных страниц завершенно");
 
+            pages.All(pages => pages.DeadEnd = false);
+
+            logger.LogInformation("Повторное сканирование ссылок в контенте");
+            scanner.ScanPagesLinksTree(pages, WebScanner.PAGE_CONTENT_LINKS);
+            logger.LogInformation("Повторное сканирование ссылок в контенте завершено");
 
             List<Page> dbPages = context.Pages.ToList();
             foreach (Page page in dbPages)
@@ -65,19 +84,39 @@ namespace WebPareser {
                     p.ChildPages = AddSubpages(p);
             logger.LogInformation("Взятие данных из базы завершено");
 
-
-
-
             logger.LogInformation("Сортировка данных");
-
             PageGroup um = pageGroupsList.FirstOrDefault(o => o.Name == "ВЕРХНЕЕ МЕНЮ");
             pageGroupsList.Remove(um);
             pageGroupsList.Insert(0, um);
-
             logger.LogInformation("Сортировка данных завершена");
 
             FileWriter writer = new FileWriter();
-            writer.CreateHTMLMap(pageGroupsList);
+            writer.CreateHTMLMap(pageGroupsList);*/
+        }
+
+        static int RunDisplayPageData(DisplayPageData options)
+        {
+            return 0;
+        }
+
+        static int RunCreateHTMLMap(CreateHTMLMap options)
+        {
+            return 0;
+        }
+
+        static int RunDisplayAllPages(DisplayAllPages options)
+        {
+            return 0;
+        }
+
+        static int RunScanAllPagesLinks(ScanAllPagesLinks options)
+        {
+            return 0;
+        }
+
+        static int RunScanPageLinks(ScanPageLinks options)
+        {
+            return 0;
         }
 
         public static List<Page> AddSubpages(Page page)
