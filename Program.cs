@@ -23,11 +23,11 @@ namespace WebPareser {
 
             Parser.Default.ParseArguments<DisplayAllPages, CreateHTMLMap, DisplayPageData, ScanAllPagesLinks, ScanPageLinks>(args)
                 .MapResult(
-                    (DisplayAllPages options) => RunDisplayAllPages(options),
-                    (CreateHTMLMap options) => RunCreateHTMLMap(options),
-                    (DisplayPageData options) => RunDisplayPageData(options),
-                    (ScanAllPagesLinks options) => RunScanAllPagesLinks(options),
-                    (ScanPageLinks options) => RunScanPageLinks(options),
+                    (DisplayAllPages options) => DisplayAllPages.Run(options),
+                    (CreateHTMLMap options) => CreateHTMLMap.Run(options),
+                    (DisplayPageData options) => DisplayPageData.Run(options),
+                    (ScanAllPagesLinks options) => ScanAllPagesLinks.Run(options),
+                    (ScanPageLinks options) => ScanPageLinks.Run(options),
                     error => 1
                 );
 			
@@ -92,31 +92,6 @@ namespace WebPareser {
 
             FileWriter writer = new FileWriter();
             writer.CreateHTMLMap(pageGroupsList);*/
-        }
-
-        static int RunDisplayPageData(DisplayPageData options)
-        {
-            return 0;
-        }
-
-        static int RunCreateHTMLMap(CreateHTMLMap options)
-        {
-            return 0;
-        }
-
-        static int RunDisplayAllPages(DisplayAllPages options)
-        {
-            return 0;
-        }
-
-        static int RunScanAllPagesLinks(ScanAllPagesLinks options)
-        {
-            return 0;
-        }
-
-        static int RunScanPageLinks(ScanPageLinks options)
-        {
-            return 0;
         }
 
         public static List<Page> AddSubpages(Page page)

@@ -11,5 +11,14 @@ namespace WebParser.CommandLine
     internal class CreateHTMLMap
     {
 
+
+
+
+        public static int Run(CreateHTMLMap options) 
+        {
+            return 0;
+        }
     }
+
+    
 }
