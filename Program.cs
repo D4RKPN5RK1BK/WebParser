@@ -21,11 +21,10 @@ namespace WebPareser {
 		
 		static void Main(string[] args) {
 
-            Parser.Default.ParseArguments<DisplayAllPages, CreateHTMLMap, DisplayPageData, ScanAllPagesLinks, ScanPageLinks>(args)
+            Parser.Default.ParseArguments<ScanPageData, CreateHTMLMap, ScanAllPagesLinks, ScanPageLinks>(args)
                 .MapResult(
-                    (DisplayAllPages options) => DisplayAllPages.Run(options),
+                    (ScanPageData options) => ScanPageData.Run(options),
                     (CreateHTMLMap options) => CreateHTMLMap.Run(options),
-                    (DisplayPageData options) => DisplayPageData.Run(options),
                     (ScanAllPagesLinks options) => ScanAllPagesLinks.Run(options),
                     (ScanPageLinks options) => ScanPageLinks.Run(options),
                     error => 1

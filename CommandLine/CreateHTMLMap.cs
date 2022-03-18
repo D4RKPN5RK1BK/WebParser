@@ -11,7 +11,12 @@ namespace WebParser.CommandLine
     internal class CreateHTMLMap
     {
 
+        [Option('d', "display", HelpText = "Defines Type of result display (file|display)")]
+        public string Display {get; set;}
 
+
+        [Option('f', "folder", HelpText = "Defines Resulting file Destination Folder")]
+        public string DestinationFolder { get; set; }
 
 
         public static int Run(CreateHTMLMap options) 
