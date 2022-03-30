@@ -1,8 +1,8 @@
 using CommandLine;
 
-namespace WebPareser.CommandLine {
+namespace WebPareser.CommandVerbs {
 	[Verb("config", false, HelpText = "Configure database connection and log options")]
-	class ConfigOptions {
+	class ConfigOptionsVerb {
 		[Option('d', "database-folder", Required = false, HelpText = "configure database connection string")]
 		public string DatabaseFolder { get; set; }
 
@@ -18,7 +18,9 @@ namespace WebPareser.CommandLine {
 		[Option("use-sqlserver", HelpText = "Set Database Settings for SQL-Server connection")]
 		public bool UseSQLServer { get; set; }
 
-		public static int Run(ConfigOptions options) {
+		public static int Run(ConfigOptionsVerb options) 
+		{
+			Console.WriteLine("Scan page data is running");
 			return 0;
 		}
 	}

@@ -5,10 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WebParser.CommandLine
+namespace WebParser.CommandVerbs
 {
     [Verb("scan-data", HelpText = "Display pages list")]
-    internal class ScanPageData
+    internal class ScanPageDataVerb
     {
         [Option('a', "all", HelpText = "Scans all pages content")]
         public bool AllPages { get; set; }
@@ -16,8 +16,9 @@ namespace WebParser.CommandLine
         [Option('r', "raw", HelpText = "Scans page content as raw html")]
         public bool Raw { get; set; }
 
-        public static int Run(ScanPageData options) 
+        public static int Run(ScanPageDataVerb options) 
         {
+            Console.WriteLine("Scan page data is running");
             return 0;
         }
     }

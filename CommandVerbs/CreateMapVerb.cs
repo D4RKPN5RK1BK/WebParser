@@ -5,10 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WebParser.CommandLine
+namespace WebParser.CommandVerbs
 {
     [Verb("create-map", HelpText = "Create html site map from all pages in database")]
-    internal class CreateHTMLMap
+    internal class CreateMapVerb
     {
 
         [Option('d', "display", HelpText = "Defines Type of result display (file|display)")]
@@ -19,8 +19,9 @@ namespace WebParser.CommandLine
         public string DestinationFolder { get; set; }
 
 
-        public static int Run(CreateHTMLMap options) 
+        public static int Run(CreateMapVerb options) 
         {
+            Console.WriteLine("Scan page data is running");
             return 0;
         }
     }

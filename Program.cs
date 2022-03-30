@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using WebParser.Writer;
 using CommandLine;
-using WebParser.CommandLine;
+using WebParser.CommandVerbs;
 
 namespace WebPareser {
 	class Program {
@@ -21,19 +21,19 @@ namespace WebPareser {
 		
 		static void Main(string[] args) {
 
-            Parser.Default.ParseArguments<ScanPageData, CreateHTMLMap, ScanAllPagesLinks, ScanPageLinks>(args)
+            Parser.Default.ParseArguments<ScanPageDataVerb, CreateMapVerb, ScanPageLinksVerb>(args)
                 .MapResult(
-                    (ScanPageData options) => ScanPageData.Run(options),
-                    (CreateHTMLMap options) => CreateHTMLMap.Run(options),
-                    (ScanAllPagesLinks options) => ScanAllPagesLinks.Run(options),
-                    (ScanPageLinks options) => ScanPageLinks.Run(options),
+                    (ScanPageDataVerb options) => ScanPageDataVerb.Run(options),
+                    (CreateMapVerb options) => CreateMapVerb.Run(options),
+                    (ScanPageLinksVerb options) => ScanPageLinksVerb.Run(options),
                     error => 1
                 );
-			
-            
-            /*context = new DatabaseContext();
 
-            loggerFactory = LoggerFactory.Create(config => {
+
+            context = new DatabaseContext();
+
+            loggerFactory = LoggerFactory.Create(config =>
+            {
                 config.AddConsole();
             });
             logger = loggerFactory.CreateLogger<Program>();
@@ -90,7 +90,7 @@ namespace WebPareser {
             logger.LogInformation("Сортировка данных завершена");
 
             FileWriter writer = new FileWriter();
-            writer.CreateHTMLMap(pageGroupsList);*/
+            writer.CreateHTMLMap(pageGroupsList);
         }
 
         public static List<Page> AddSubpages(Page page)
