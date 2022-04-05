@@ -17,11 +17,5 @@ namespace WebPareser.CommandVerbs {
 
 		[Option("use-sqlserver", HelpText = "Set Database Settings for SQL-Server connection")]
 		public bool UseSQLServer { get; set; }
-
-		public static int Run(ConfigOptionsVerb options) 
-		{
-			Console.WriteLine("Scan page data is running");
-			return 0;
-		}
 	}
 }

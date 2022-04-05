@@ -5,18 +5,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WebPareser.Data;
+using WebParser.CommandVerbs;
 
 namespace WebParser.CommandExecution
 {
-    internal static class Execution
+    internal static class CreateMap
     {
-        private static DatabaseContext context;
-        private static ILoggerFactory loggerFactory;
-        private static ILogger logger;
-        
-        public static int Run()
+        private static DatabaseContext _context;
+        private static ILoggerFactory _loggerFactory;
+        private static ILogger _logger;
+
+        public static int Run(CreateMapVerb options, DatabaseContext context, ILogger logger)
         {
-            //Some code here
+            _context = context;
+            _logger = logger;
+
+
+
             return OptionsResponce();
         }
 

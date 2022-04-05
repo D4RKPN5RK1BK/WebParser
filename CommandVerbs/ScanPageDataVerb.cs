@@ -16,10 +16,5 @@ namespace WebParser.CommandVerbs
         [Option('r', "raw", HelpText = "Scans page content as raw html")]
         public bool Raw { get; set; }
 
-        public static int Run(ScanPageDataVerb options) 
-        {
-            Console.WriteLine("Scan page data is running");
-            return 0;
-        }
     }
 }

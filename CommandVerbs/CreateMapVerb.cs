@@ -18,12 +18,6 @@ namespace WebParser.CommandVerbs
         [Option('f', "folder", HelpText = "Defines Resulting file Destination Folder")]
         public string DestinationFolder { get; set; }
 
-
-        public static int Run(CreateMapVerb options) 
-        {
-            Console.WriteLine("Scan page data is running");
-            return 0;
-        }
     }
 
     

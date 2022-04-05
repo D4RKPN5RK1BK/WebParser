@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using WebParser.Writer;
 using CommandLine;
 using WebParser.CommandVerbs;
+using WebParser.CommandExecution;
 
 namespace WebPareser {
 	class Program {
@@ -21,15 +22,6 @@ namespace WebPareser {
 		
 		static void Main(string[] args) {
 
-            Parser.Default.ParseArguments<ScanPageDataVerb, CreateMapVerb, ScanPageLinksVerb>(args)
-                .MapResult(
-                    (ScanPageDataVerb options) => ScanPageDataVerb.Run(options),
-                    (CreateMapVerb options) => CreateMapVerb.Run(options),
-                    (ScanPageLinksVerb options) => ScanPageLinksVerb.Run(options),
-                    error => 1
-                );
-
-
             context = new DatabaseContext();
 
             loggerFactory = LoggerFactory.Create(config =>
@@ -38,7 +30,18 @@ namespace WebPareser {
             });
             logger = loggerFactory.CreateLogger<Program>();
 
-            logger.LogInformation("Отчистка базы данных");
+
+
+            Parser.Default.ParseArguments<ScanPageDataVerb, CreateMapVerb, ScanPageLinksVerb>(args)
+                .MapResult(
+                    (ScanPageDataVerb options) => ScanPageData.Run(options, context, logger),
+                    (CreateMapVerb options) => CreateMap.Run(options, context, logger),
+                    (ScanPageLinksVerb options) => ScanPageLinks.Run(options, context, logger),
+                    error => 1
+                );
+
+
+           /* logger.LogInformation("Отчистка базы данных");
             context.Pages.RemoveRange(context.Pages);
             context.PageGroups.RemoveRange(context.PageGroups);
             context.SaveChanges();
@@ -90,7 +93,7 @@ namespace WebPareser {
             logger.LogInformation("Сортировка данных завершена");
 
             FileWriter writer = new FileWriter();
-            writer.CreateHTMLMap(pageGroupsList);
+            writer.CreateHTMLMap(pageGroupsList);*/
         }
 
         public static List<Page> AddSubpages(Page page)
