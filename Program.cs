@@ -41,6 +41,8 @@ namespace WebPareser {
                 );
 
 
+            // Some dev branch code here
+
            /* logger.LogInformation("Отчистка базы данных");
             context.Pages.RemoveRange(context.Pages);
             context.PageGroups.RemoveRange(context.PageGroups);
