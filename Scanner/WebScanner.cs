@@ -30,18 +30,15 @@ namespace WebPareser.Scanner {
 			document = browserContext.OpenAsync(address).Result;
 		}
 
-		/// <summary>
-		/// ������������ ������ �� ������� ��������, ���������� ������ �������, � ������ ��������� �������� ��� ����������� ������
-		/// </summary>
-		/// <returns>������ ������� ������ ������� ��������� ��� ������ �� ������� ��������</returns>
-		public List<PageGroup> ScanMainPage()
+
+        public List<PageGroup> ScanMainPage()
         {
 			document = browserContext.OpenAsync(address + MAIN_PAGE).Result;
 			string documentPath = Regex.Match(document.Url, @"^\S*/").Value;
 			List<PageGroup> pageGroups = new List<PageGroup>();
 
 			// Top menu section
-			var headerGroup = new PageGroup("������� ����");
+			var headerGroup = new PageGroup("ВЕРХНЕЕ МЕНЮ");
 			var headerLinks = document.QuerySelectorAll(HEADER_PAGES);
 
 			foreach (var link in headerLinks)

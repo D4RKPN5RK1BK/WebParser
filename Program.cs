@@ -12,6 +12,7 @@ using WebParser.Writer;
 using CommandLine;
 using WebParser.CommandVerbs;
 using WebParser.CommandExecution;
+using Microsoft.Extensions.Hosting;
 
 namespace WebPareser {
 	class Program {
@@ -20,18 +21,22 @@ namespace WebPareser {
         private static ILoggerFactory loggerFactory;
         private static ILogger logger;
 		
-		static void Main(string[] args) {
+		static async void Main(string[] args) {
 
-            context = new DatabaseContext();
+            // Подключение к файлу конфигурации
+            using IHost host = Host.CreateDefaultBuilder(args).Build();
+            host.Run();
+            
+            // context = new DatabaseContext();
 
+            // Добавление логгера
             loggerFactory = LoggerFactory.Create(config =>
-            {
-                config.AddConsole();
-            });
+                {config.AddConsole();});
+
             logger = loggerFactory.CreateLogger<Program>();
 
 
-
+            // Контроллер входящих параметров
             Parser.Default.ParseArguments<ScanPageDataVerb, CreateMapVerb, ScanPageLinksVerb>(args)
                 .MapResult(
                     (ScanPageDataVerb options) => ScanPageData.Run(options, context, logger),
