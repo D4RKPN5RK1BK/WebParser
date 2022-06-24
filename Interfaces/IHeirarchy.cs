@@ -9,6 +9,6 @@ namespace WebParser.Interfaces
     internal interface IHeirarchy<T>
     {
         public T Parent { get; set; }
-        public IEnumerable<T> Childrens { get; set; }
+        public IEnumerable<T> Children { get; set; }
     }
 }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebPareser.Data;
 
@@ -10,9 +11,10 @@ using WebPareser.Data;
 namespace WebParser.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20220624192844_Page_fix")]
+    partial class Page_fix
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.1");
@@ -74,6 +76,9 @@ namespace WebParser.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("GroupId")
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("IsArchive")
                         .HasColumnType("INTEGER");
 
@@ -105,7 +110,10 @@ namespace WebParser.Migrations
                     b.Property<string>("PageGroupId")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ParentId")
+                    b.Property<string>("PageId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ParentPageId")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("Updated")
@@ -116,7 +124,7 @@ namespace WebParser.Migrations
 
                     b.HasIndex("PageGroupId");
 
-                    b.HasIndex("ParentId");
+                    b.HasIndex("PageId");
 
                     b.ToTable("Pages");
                 });
@@ -158,13 +166,11 @@ namespace WebParser.Migrations
                         .WithMany("Pages")
                         .HasForeignKey("PageGroupId");
 
-                    b.HasOne("WebParser.Models.Page", "Parent")
+                    b.HasOne("WebParser.Models.Page", null)
                         .WithMany("Children")
-                        .HasForeignKey("ParentId");
+                        .HasForeignKey("PageId");
 
                     b.Navigation("PageGroup");
-
-                    b.Navigation("Parent");
                 });
 
             modelBuilder.Entity("WebParser.Models.Page", b =>

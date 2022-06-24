@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace WebParser.CommandVerbs
 {
-    [Verb("scan-data", HelpText = "Display pages list")]
+    [Verb("scancontent", HelpText = "Сканирует информацию со страниц в базе данных")]
     internal class ScanPageDataVerb
     {
-        [Option('a', "all", HelpText = "Scans all pages content")]
+        [Option('l', "link", HelpText = "Ссылка на конкретную страницу для сканирования")]
         public bool AllPages { get; set; }
 
         [Option('r', "raw", HelpText = "Scans page content as raw html")]

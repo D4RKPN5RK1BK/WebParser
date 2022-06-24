@@ -17,23 +17,23 @@ using Microsoft.Extensions.Hosting;
 namespace WebPareser {
 	class Program {
 
-		private static DatabaseContext? context;
+		private static DatabaseContext context;
         private static ILoggerFactory loggerFactory;
         private static ILogger logger;
 		
-		static async void Main(string[] args) {
+		static async Task Main(string[] args) {
 
             // Подключение к файлу конфигурации
-            using IHost host = Host.CreateDefaultBuilder(args).Build();
-            host.Run();
-            
-            // context = new DatabaseContext();
+            // using IHost host = Host.CreateDefaultBuilder(args).Build();
+            // host.Run();
 
             // Добавление логгера
             loggerFactory = LoggerFactory.Create(config =>
                 {config.AddConsole();});
 
             logger = loggerFactory.CreateLogger<Program>();
+
+            context = new DatabaseContext();
 
 
             // Контроллер входящих параметров
@@ -105,14 +105,14 @@ namespace WebPareser {
             writer.CreateHTMLMap(pageGroupsList);*/
         }
 
-        public static List<Page> AddSubpages(Page page)
-        {
-            List<Page> pages = context.Pages.Where(o => o.ParentPageId == page.Id).ToList();
+        // public static List<Page> AddSubpages(Page page)
+        // {
+        //     List<Page> pages = context.Pages.Where(o => o.ParentPageId == page.Id).ToList();
 
-            foreach (Page p in pages)
-                p.ChildPages = AddSubpages(p);
+        //     foreach (Page p in pages)
+        //         p.ChildPages = AddSubpages(p);
 
-            return pages;
-        }
+        //     return pages;
+        // }
     }
 }

@@ -48,70 +48,47 @@ namespace WebParser.Models
         public DateTime? Created { get; set; }
 
         [Required]
-        public DateTime? LastModified { get; set; }
+        public DateTime? Updated { get; set; }
 
         [Required]
         public bool IsConfirmed { get; set; }
 
-        public string? ParentPageId { get; set; }
+        public string? ParentId { get; set; }
 
-        [NotMapped]
-        public Page? ParentPage { get; set; }
-
-		[NotMapped]
-		public List<Page> ChildPages { get; set; }
-
-        public string? GroupId { get; set; }
+        public string? PageGroupId { get; set; }
 
         public PageGroup? PageGroup { get; set; }
 
-        public List<Document>? PageFiles { get; set; }
-
-        [NotMapped]
-        public bool DeadEnd { get; set; }
+        public IEnumerable<Document>? PageFiles { get; set; }
 
         public Page()
         {
-            DeadEnd = false;
             Id = Guid.NewGuid().ToString();
             Created = DateTime.Now;
-            LastModified = DateTime.Now;
+            Updated = DateTime.Now;
             PageFiles = new List<Document>();
-            ChildPages = new List<Page>();
+            Children = new List<Page>();
         }
 
-        public Page(string name, string legasyURL = "", string parentPageId = null, DateTime? created = null, DateTime? lastModified = null, string? content = null, string? legasyContent = null, string? description = null)
+        public Page(string name, string legasyURL = "", string groupId = null, string parentId = null, DateTime? created = null, DateTime? lastModified = null, string? content = null, string? legasyContent = null, string? description = null)
         {
             Id = Guid.NewGuid().ToString();
-            DeadEnd = false;
-            Name = name;
+            Name = name.ToUpper().First() + name.Remove(0, 1).ToLower();
+            PageGroupId = groupId;
             NormalizedName = name.Normalize().ToUpper();
             LegasyURL = legasyURL;
             Content = content;
             LegasyContent = legasyContent;
             Description = description;
             Created = created ?? DateTime.Now;
-            LastModified = lastModified ?? DateTime.Now;
+            Updated = lastModified ?? DateTime.Now;
             PageFiles = new List<Document>();
-            ChildPages = new List<Page>();
-            ParentPageId = parentPageId;
+            Children = new List<Page>();
+            ParentId = parentId;
         }
 
-        [NotMapped]
-        public List<Page> FullSubpageList
-        {
-            get
-            {
-                List<Page> list = new List<Page>();
-                foreach (Page page in ChildPages)
-                    list.AddRange(FullSubpageList);
-                return list;
-            }
-        }
 
-        [NotMapped]
-        public Page Parent { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        [NotMapped]
-        public IEnumerable<Page> Childrens { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public Page Parent { get; set; }
+        public IEnumerable<Page> Children { get; set; }
     }
 }

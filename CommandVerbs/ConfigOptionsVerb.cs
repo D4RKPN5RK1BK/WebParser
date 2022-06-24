@@ -1,7 +1,7 @@
 using CommandLine;
 
 namespace WebPareser.CommandVerbs {
-	[Verb("config", false, HelpText = "Configure database connection and log options")]
+	[Verb("config", false, HelpText = "Конфигурация программы (даже не пытайтесь, это не работает)")]
 	class ConfigOptionsVerb {
 		[Option('d', "database-folder", Required = false, HelpText = "configure database connection string")]
 		public string DatabaseFolder { get; set; }

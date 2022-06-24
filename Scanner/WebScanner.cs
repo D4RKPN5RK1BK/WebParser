@@ -67,10 +67,10 @@ namespace WebPareser.Scanner {
         {
 			List<Page> pages = new List<Page>();
 			
-			if (page.DeadEnd)
-				logger.LogWarning("\t" + page.Name);
-			else
-				logger.LogInformation("\t" + page.Name);
+			// if (page.DeadEnd)
+			// 	logger.LogWarning("\t" + page.Name);
+			// else
+			// 	logger.LogInformation("\t" + page.Name);
 
 			document = browserContext.OpenAsync(page.LegasyURL).Result;
 			IHtmlCollection<IElement> links = document.QuerySelectorAll(query);
@@ -95,23 +95,23 @@ namespace WebPareser.Scanner {
 		/// ��������� ������ ����� ������ �������� ���� ��� �������� �������. ��� ���������� ������ ����������� � ���������� �������.
 		/// </summary>
 		/// <param name="pages">������ ������� ��� ������������ ������ ������</param>
-		public void ScanPagesLinksTree(List<Page> pages, string query = HEADER_PAGES)
-        {
-			var tempPages =new List<Page>();
-			foreach(var page in pages.Where(o => !o.DeadEnd))
-			{
-				tempPages.AddRange(ScanPage(page, query)
-					.Where(o => !pages.Any(n => n.Name == o.Name && n.LegasyURL == o.LegasyURL)));
-				page.DeadEnd = true;
-            }
+		// public void ScanPagesLinksTree(List<Page> pages, string query = HEADER_PAGES)
+        // {
+		// 	var tempPages =new List<Page>();
+		// 	foreach(var page in pages.Where(o => !o.DeadEnd))
+		// 	{
+		// 		tempPages.AddRange(ScanPage(page, query)
+		// 			.Where(o => !pages.Any(n => n.Name == o.Name && n.LegasyURL == o.LegasyURL)));
+		// 		page.DeadEnd = true;
+        //     }
 
-			foreach (var tp in tempPages)
-				logger.LogInformation("��������� �������� \t" + tp.Name);
+		// 	foreach (var tp in tempPages)
+		// 		logger.LogInformation("��������� �������� \t" + tp.Name);
 
-			pages.AddRange(tempPages);
-			if (tempPages.Count > 0)
-				ScanPagesLinksTree(pages, query);
+		// 	pages.AddRange(tempPages);
+		// 	if (tempPages.Count > 0)
+		// 		ScanPagesLinksTree(pages, query);
 
-		}
+		// }
 	}
 }

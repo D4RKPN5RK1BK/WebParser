@@ -46,12 +46,12 @@ namespace WebParser.Writer
         {
             StringBuilder output = new StringBuilder();
 
-            if (page.ChildPages.Count > 0)
+            if (page.Children.Count() > 0)
             {
                 output.AppendLine("<li>");
                 output.AppendLine($"<a href=\"{page.LegasyURL}\">{page.Name}</a>");
                 output.AppendLine("<ol>");
-                foreach (Page p in page.ChildPages)
+                foreach (Page p in page.Children)
                     output.Append(OLIterator(p));
                 output.AppendLine("</ol>");
                 output.AppendLine("</li>");

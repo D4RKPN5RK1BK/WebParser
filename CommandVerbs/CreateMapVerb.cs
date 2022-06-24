@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace WebParser.CommandVerbs
 {
-    [Verb("create-map", HelpText = "Create html site map from all pages in database")]
+    [Verb("map", HelpText = "Создает HTML разметку с содержанием карты сайта")]
     internal class CreateMapVerb
     {
 
