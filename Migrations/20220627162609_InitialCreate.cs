@@ -28,22 +28,25 @@ namespace WebParser.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    NormalizedName = table.Column<string>(type: "TEXT", nullable: true),
-                    Meta = table.Column<string>(type: "TEXT", nullable: true),
+                    Title = table.Column<string>(type: "TEXT", nullable: true),
+                    Header = table.Column<string>(type: "TEXT", nullable: true),
+                    NormalizedHeader = table.Column<string>(type: "TEXT", nullable: true),
+                    LinkName = table.Column<string>(type: "TEXT", nullable: false),
+                    NormalizedLinkName = table.Column<string>(type: "TEXT", nullable: true),
+                    Tags = table.Column<string>(type: "TEXT", nullable: true),
                     Description = table.Column<string>(type: "TEXT", nullable: true),
                     Content = table.Column<string>(type: "TEXT", nullable: true),
-                    LegasyLink = table.Column<string>(type: "TEXT", nullable: true),
-                    LegasyContent = table.Column<string>(type: "TEXT", nullable: true),
+                    LegasyURL = table.Column<string>(type: "TEXT", nullable: true),
                     LegasyPath = table.Column<string>(type: "TEXT", nullable: true),
+                    LegasyContent = table.Column<string>(type: "TEXT", nullable: true),
+                    LegasyContentWithUpdatedFiles = table.Column<string>(type: "TEXT", nullable: true),
                     IsLegasy = table.Column<bool>(type: "INTEGER", nullable: false),
                     IsArchive = table.Column<bool>(type: "INTEGER", nullable: false),
                     Created = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    LastModified = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    Updated = table.Column<DateTime>(type: "TEXT", nullable: false),
                     IsConfirmed = table.Column<bool>(type: "INTEGER", nullable: false),
-                    ParentPageId = table.Column<int>(type: "INTEGER", nullable: true),
-                    GroupId = table.Column<string>(type: "TEXT", nullable: true),
-                    PageGroupId = table.Column<string>(type: "TEXT", nullable: false)
+                    ParentId = table.Column<string>(type: "TEXT", nullable: true),
+                    PageGroupId = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -52,8 +55,12 @@ namespace WebParser.Migrations
                         name: "FK_Pages_PageGroups_PageGroupId",
                         column: x => x.PageGroupId,
                         principalTable: "PageGroups",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Pages_Pages_ParentId",
+                        column: x => x.ParentId,
+                        principalTable: "Pages",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -90,6 +97,11 @@ namespace WebParser.Migrations
                 name: "IX_Pages_PageGroupId",
                 table: "Pages",
                 column: "PageGroupId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Pages_ParentId",
+                table: "Pages",
+                column: "ParentId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

@@ -11,8 +11,8 @@ using WebPareser.Data;
 namespace WebParser.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20220624193230_PageId_fix")]
-    partial class PageId_fix
+    [Migration("20220627162609_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -76,7 +76,7 @@ namespace WebParser.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("GroupId")
+                    b.Property<string>("Header")
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsArchive")
@@ -91,26 +91,35 @@ namespace WebParser.Migrations
                     b.Property<string>("LegasyContent")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("LegasyContentWithUpdatedFiles")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("LegasyPath")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("LegasyURL")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Meta")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Name")
+                    b.Property<string>("LinkName")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("NormalizedName")
+                    b.Property<string>("NormalizedHeader")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NormalizedLinkName")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PageGroupId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ParentId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Tags")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Title")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("Updated")

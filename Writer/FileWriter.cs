@@ -49,7 +49,7 @@ namespace WebParser.Writer
             if (page.Children.Count() > 0)
             {
                 output.AppendLine("<li>");
-                output.AppendLine($"<a href=\"{page.LegasyURL}\">{page.Name}</a>");
+                output.AppendLine($"<a href=\"{page.LegasyURL}\">{page.LinkName}</a>");
                 output.AppendLine("<ol>");
                 foreach (Page p in page.Children)
                     output.Append(OLIterator(p));
@@ -57,7 +57,7 @@ namespace WebParser.Writer
                 output.AppendLine("</li>");
             }
             else
-                output.AppendLine($"<li><a href =\"{page.LegasyURL}\">{page.Name}</a></li>");
+                output.AppendLine($"<li><a href =\"{page.LegasyURL}\">{page.LinkName}</a></li>");
 
             return output;
         }

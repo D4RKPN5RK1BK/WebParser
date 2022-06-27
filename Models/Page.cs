@@ -9,16 +9,21 @@ namespace WebParser.Models
     public class Page : IHeirarchy<Page>, IComparable
     {
         private string _legasyURL;
-
         [Required]
         public string? Id { get; set; }
 
+        public string? Title { get; set; }
+
+        public string? Header { get; set; }
+        public string? NormalizedHeader { get; set; }
+
+
         [Required]
-        public string? Name { get; set; }
+        public string? LinkName { get; set; }
 
-        public string? NormalizedName { get; set; }
+        public string? NormalizedLinkName { get; set; }
 
-        public string? Meta { get; set; }
+        public string? Tags { get; set; }
 
         public string? Description { get; set; }
 
@@ -37,6 +42,7 @@ namespace WebParser.Models
         public string? LegasyPath { get; set; }
 
         public string? LegasyContent { get; set; }
+        public string? LegasyContentWithUpdatedFiles { get; set; }
 
         [Required]
         public bool IsLegasy { get; set; }
@@ -73,9 +79,9 @@ namespace WebParser.Models
         public Page(string name, string legasyURL = "", string groupId = null, string parentId = null, DateTime? created = null, DateTime? lastModified = null, string? content = null, string? legasyContent = null, string? description = null)
         {
             Id = Guid.NewGuid().ToString();
-            Name = name.ToUpper().First() + name.Remove(0, 1).ToLower();
+            LinkName = name.ToUpper().First() + name.Remove(0, 1).ToLower();
             PageGroupId = groupId;
-            NormalizedName = name.Normalize().ToUpper();
+            NormalizedLinkName = name.Normalize().ToUpper();
             LegasyURL = legasyURL;
             Content = content;
             LegasyContent = legasyContent;
@@ -95,7 +101,7 @@ namespace WebParser.Models
         {
             Page other = obj as Page;
 
-            if (other.Name != this.Name || other.LegasyURL != this.LegasyURL)
+            if (other.LinkName != this.LinkName || other.LegasyURL != this.LegasyURL)
                 return 1;
 
             return 0;

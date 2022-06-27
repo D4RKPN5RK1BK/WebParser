@@ -94,12 +94,11 @@ namespace WebPareser.Scanner
                 {
                     if (s.GetAttribute("id") == "zag")
                         pageGroups.Add(new PageGroup(s.TextContent));
-                    else
-                    {
-
-                    }
-                    foreach (var link in s.Children)
-                        pageGroups.Last().Pages.Add(new Page(link.TextContent, path + link.GetAttribute("href")));
+                    
+                    if (s.GetAttribute("id") == "link")
+                        foreach (var link in s.Children)
+                            pageGroups.Last().Pages.Add(new Page(link.TextContent, path + link.GetAttribute("href"), pageGroups.Last().Id));
+                    
                 }
             }
             catch (Exception ex)
@@ -117,30 +116,39 @@ namespace WebPareser.Scanner
         {
             List<Page> pages = new List<Page>();
 
-            try {
-                document = browserContext.OpenAsync(page.LegasyURL).Result;
-                IHtmlCollection<IElement> links = document.QuerySelectorAll(NAV);
+            _logger.LogInformation(page.LegasyURL + (page.PageGroupId == null ? "\n НЕ НАЙДЕНА ГРУППА СТРАНИЦЫ" : ""));
 
-                foreach (var link in links)
+            try
+            {
+                if (Regex.IsMatch(page.LegasyURL!, $@"{ADDRESS}"))
                 {
-                    Page p = new Page(link.TextContent, page.LegasyPath + link.GetAttribute("href"), page.PageGroupId, page.Id);
+                    document = browserContext.OpenAsync(page.LegasyURL!).Result;
+                    IHtmlCollection<IElement> links = document.QuerySelectorAll($"{HEADER_PAGES}, {PAGE_CONTENT_LINKS}");
 
-                    if (link.GetAttribute("href").Contains(".ru"))
-                        p.LegasyURL = link.GetAttribute("href");
+                    foreach (var link in links)
+                    {
+                        Page p = new Page(link.TextContent, page.LegasyPath + link.GetAttribute("href"), page.PageGroupId!, page.Id!);
 
-                    while (Regex.IsMatch(p.LegasyURL, @"[^\/]*\/\.\.\/"))
-                        p.LegasyURL = p.LegasyURL.Replace(Regex.Match(p.LegasyURL, @"[^\/]*\/\.\.\/").Value, "");
+                        if (link.GetAttribute("href")!.Contains(".ru"))
+                            p.LegasyURL = link.GetAttribute("href");
+                        
+                        while (Regex.IsMatch(p.LegasyURL!, @"[^\/]*\/\.\.\/"))
+                            p.LegasyURL = p.LegasyURL!.Replace(Regex.Match(p.LegasyURL, @"[^\/]*\/\.\.\/").Value, "");
 
-                    pages.Add(p);
+                        // _logger.LogInformation("\t" + p.LegasyURL);
+                        pages.Add(p);
+                    }
                 }
+
             }
-            catch(Exception ex) {
-                 _logger.LogCritical($"Сканирование ссылок на странице {page.Name} завершилось с ошибкой:\n{ex.Message}");
+            catch (Exception ex)
+            {
+                _logger.LogCritical($"Сканирование ссылок на странице {page.LinkName} завершилось с ошибкой:\n{ex.Message}");
             }
 
-           
 
-			return pages;
+
+            return pages;
         }
 
         /// <summary>

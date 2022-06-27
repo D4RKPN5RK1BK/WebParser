@@ -16,6 +16,10 @@ namespace WebPareser.Data
 
         public string DbPath { get; set; }
 
+        public DatabaseContext() : base() {
+            Database.EnsureCreated();
+        }
+
         protected override void OnConfiguring(DbContextOptionsBuilder builder)
         {
 
@@ -29,31 +33,6 @@ namespace WebPareser.Data
             DbPath = Path.Join(path, $"{folderName}\\Database.db");
 
             builder.UseSqlite($"DataSource={DbPath}");
-        }
-
-
-        public void ClearEmptyPages()
-        {
-            Pages.RemoveRange(Pages.Where(o => String.IsNullOrEmpty(o.Name) || Regex.IsMatch(o.Name, @"^\s*$")));
-            SaveChanges();
-        }
-
-        public void AddPageGroup(PageGroup pageGroup)
-        {
-            if (!PageGroups.Any(o => o.Name == pageGroup.Name))
-            {
-                PageGroups.Add(pageGroup);
-                // SaveChanges();
-            }
-        }
-
-        public void AddPage(Page page)
-        {
-            if (!Pages.Any(o => o.Name == page.Name && o.LegasyURL == page.LegasyURL))
-            {
-                Pages.Add(page);
-                // SaveChanges();
-            }
         }
     }
 }

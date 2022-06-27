@@ -74,6 +74,9 @@ namespace WebParser.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Header")
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("IsArchive")
                         .HasColumnType("INTEGER");
 
@@ -86,26 +89,35 @@ namespace WebParser.Migrations
                     b.Property<string>("LegasyContent")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("LegasyContentWithUpdatedFiles")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("LegasyPath")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("LegasyURL")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Meta")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Name")
+                    b.Property<string>("LinkName")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("NormalizedName")
+                    b.Property<string>("NormalizedHeader")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NormalizedLinkName")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PageGroupId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ParentId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Tags")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Title")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("Updated")

@@ -4,6 +4,7 @@ using WebPareser.Models;
 using WebParser.Models;
 using WebPareser.Scanner;
 using WebParser.CommandVerbs;
+using Microsoft.Data.Sqlite;
 
 namespace WebParser.CommandExecution
 {
@@ -22,19 +23,11 @@ namespace WebParser.CommandExecution
             _context = context;
             _logger = logger;
             _scanner = new ScannerApi(logger);
-
             Pages = new Storage<Page>();
             PageGroups = new Storage<PageGroup>();
 
-
             if (!options.Save)
-            {
-                logger.LogInformation("Отчистка базы данных...");
-                _context.RemoveRange(_context.Pages);
-                _context.RemoveRange(_context.PageGroups);
-                _context.SaveChanges();
-                logger.LogInformation("Отчистка базы данных успешно завершена.");
-            }
+                ClearDatabase();
 
             Pages.Elements = _context.Pages.ToList();
             PageGroups.Elements = _context.PageGroups.ToList();
@@ -53,10 +46,9 @@ namespace WebParser.CommandExecution
                 Pages.Add(p);
 
 
+            // Сканирование нижнего меню главной страницы
             var pageGroups = _scanner.ScanMainPageGroups();
-
             PageGroups.AddRange(pageGroups);
-
             foreach (var pg in pageGroups)
             {
                 PageGroups.Add(pg);
@@ -64,79 +56,68 @@ namespace WebParser.CommandExecution
                     Pages.Add(p);
             }
 
-
+            // Поиск и сканирование всех вложенных страниц
             for (int i = 0; i < Pages.Elements.Count(); i++)
             {
-                ScanPageTree(Pages.Elements[i]);
+                ScanPage(Pages.Elements[i]);
             }
 
-            _logger.LogWarning($"Количество страниц: {Pages.Elements.Count()}");
-            _logger.LogWarning($"Количество страниц: {PageGroups.Elements.Count()}");
+            _logger.LogWarning($"Количество страниц\t: {Pages.Elements.Count()}");
+            _logger.LogWarning($"Количество груп\t: {PageGroups.Elements.Count()}");
 
-            logger.LogInformation("Добавление элементов в базу данных...");
-            _context.AddRange(Pages.Elements);
-            _context.AddRange(PageGroups.Elements);
-            _context.SaveChanges();
-            logger.LogInformation("Добавление элементов в базу данных успешно завершено");
-
-
+            UpdateDatabase();
 
             return 0;
 
         }
 
-        private static void ScanPageTree(Page page)
+
+        /// <summary>
+        /// Добавляет все найденные ссылки в заголовке страницы
+        /// </summary>
+        private static void ScanPage(Page page)
         {
             List<Page> subpages = _scanner.ScanPageLinks(page) as List<Page>;
-
-            foreach (var p in subpages)
-            {
-                bool untoched = !Pages.Check(p);
-                Pages.Add(p);
-                if (untoched)
-                    _scanner.ScanPageLinks(page);
-            }
+            Pages.AddRange(subpages);
         }
 
+        /// <summary>
+        /// Удаляет всю информацию из базы данных о страницах и их группах
+        /// </summary>
+        private static void ClearDatabase()
+        {
+            _logger.LogInformation("Отчистка базы данных...");
+            try
+            {
+                _context.RemoveRange(_context.Pages);
+                _context.RemoveRange(_context.PageGroups);
+                _context.SaveChanges();
+            }
+            catch (SqliteException ex)
+            {
+                _logger.LogCritical($"При отчистке базы данных произошла ошибка:\n{ex}");
+            }
+            _logger.LogInformation("Отчистка базы данных успешно завершена.");
 
+        }
 
-
-
-
-
-
-        // private static void SingleModeScan()
-        // {
-
-        // }
-
-        // private static void InitialModelScan()
-        // {
-        //     _logger.LogInformation("Scanning root page");
-        //     List<PageGroup> pageGroups = _scanner.ScanMainPage();
-        //     _logger.LogInformation("Scanning root page complited");
-
-        //     _logger.LogInformation("Saving data to database");
-        //     _context.AddRange(pageGroups);
-        //     _context.SaveChanges();
-        //     _logger.LogInformation("Saving data to database completed");
-        // }
-
-        // private static void AllModeScan()
-        // {
-        //     List<Page> pages = _context.Pages.ToList();
-        //     _logger.LogInformation("Scanning all inner pages");
-        //     _scanner.ScanPagesLinksTree(pages, WebScanner.HEADER_PAGES);
-        //     _logger.LogInformation("Scanning all inner pages completed");
-
-        //     /*List<Page> dbPages = context.Pages.ToList();
-        //     foreach (Page page in dbPages)
-        //         pages.RemoveAll(o => o == page);
-
-        //     logger.LogInformation("Сохранение данных в БД");
-        //     context.Pages.AddRange(pages);
-        //     context.SaveChanges();
-        //     logger.LogInformation("Сохранение данных в БД завершено");*/
-        // }
+        /// <summary>
+        /// Сохраняет всю информацию о страницах и их группах в базе данных
+        /// </summary>
+        private static void UpdateDatabase()
+        {
+            _logger.LogInformation("Добавление элементов в базу данных...");
+            try
+            {
+                _context.AddRange(Pages.Elements);
+                _context.AddRange(PageGroups.Elements);
+                _context.SaveChanges();
+            }
+            catch (SqliteException ex)
+            {
+                _logger.LogCritical($"При сохранении данных произошла ошибка:\n{ex}");
+            }
+            _logger.LogInformation("Добавление элементов в базу данных успешно завершено");
+        }
     }
 }
