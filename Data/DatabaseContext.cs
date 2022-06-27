@@ -19,13 +19,14 @@ namespace WebPareser.Data
         protected override void OnConfiguring(DbContextOptionsBuilder builder)
         {
 
-            SpecialFolder folder = Environment.SpecialFolder.Desktop;
+            SpecialFolder folder = Environment.SpecialFolder.MyDocuments;
             string path = Environment.GetFolderPath(folder);
+            string folderName = "GoreftinskyData";
 
-            if (!Directory.Exists(path + "/WebParser"))
-                Directory.CreateDirectory(path + "/WebParser");
+            if (!Directory.Exists($"{path}/{folderName}"))
+                Directory.CreateDirectory($"{path}/{folderName}");
 
-            DbPath = Path.Join(path, "WebParser\\Database.db");
+            DbPath = Path.Join(path, $"{folderName}\\Database.db");
 
             builder.UseSqlite($"DataSource={DbPath}");
         }
@@ -42,7 +43,7 @@ namespace WebPareser.Data
             if (!PageGroups.Any(o => o.Name == pageGroup.Name))
             {
                 PageGroups.Add(pageGroup);
-                SaveChanges();
+                // SaveChanges();
             }
         }
 
@@ -51,7 +52,7 @@ namespace WebPareser.Data
             if (!Pages.Any(o => o.Name == page.Name && o.LegasyURL == page.LegasyURL))
             {
                 Pages.Add(page);
-                SaveChanges();
+                // SaveChanges();
             }
         }
     }

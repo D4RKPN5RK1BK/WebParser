@@ -1,13 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using WebPareser.Data;
+using WebPareser.Models;
+using WebParser.Models;
 using WebPareser.Scanner;
 using WebParser.CommandVerbs;
-using WebParser.Models;
 
 namespace WebParser.CommandExecution
 {
@@ -17,45 +13,97 @@ namespace WebParser.CommandExecution
         private static ILogger _logger;
         private static ScannerApi _scanner;
 
+        private static Storage<Page> Pages;
+        private static Storage<PageGroup> PageGroups;
+
+
         public static int Run(ScanPageLinksVerb options, DatabaseContext context, ILogger logger)
         {
             _context = context;
             _logger = logger;
             _scanner = new ScannerApi(logger);
 
+            Pages = new Storage<Page>();
+            PageGroups = new Storage<PageGroup>();
+
 
             if (!options.Save)
             {
                 logger.LogInformation("Отчистка базы данных...");
                 _context.RemoveRange(_context.Pages);
-                _context.PageGroups.RemoveRange(_context.PageGroups);
+                _context.RemoveRange(_context.PageGroups);
                 _context.SaveChanges();
                 logger.LogInformation("Отчистка базы данных успешно завершена.");
             }
 
+            Pages.Elements = _context.Pages.ToList();
+            PageGroups.Elements = _context.PageGroups.ToList();
+
+
             PageGroup headerGroup = new PageGroup("ВЕРХНЕЕ МЕНЮ");
-            
-            if (!_context.PageGroups.Any(o => o.Name == headerGroup.Name)) {
-                _context.Add(headerGroup);
-                _context.SaveChanges();
+
+            // Добавление группы навигатора главной
+            if (!PageGroups.Check(headerGroup))
+                PageGroups.Add(headerGroup);
+            else
+                headerGroup = PageGroups.Elements.First(o => o.Name == headerGroup.Name);
+
+            // Сканирование навигатора на главной
+            foreach (var p in _scanner.ScanMainPageHeaderLinks(headerGroup))
+                Pages.Add(p);
+
+
+            var pageGroups = _scanner.ScanMainPageGroups();
+
+            PageGroups.AddRange(pageGroups);
+
+            foreach (var pg in pageGroups)
+            {
+                PageGroups.Add(pg);
+                foreach (var p in pg.Pages)
+                    Pages.Add(p);
             }
-            else {
-                headerGroup = _context.PageGroups.First(o => o.Name == headerGroup.Name);
+
+
+            for (int i = 0; i < Pages.Elements.Count(); i++)
+            {
+                ScanPageTree(Pages.Elements[i]);
             }
 
+            _logger.LogWarning($"Количество страниц: {Pages.Elements.Count()}");
+            _logger.LogWarning($"Количество страниц: {PageGroups.Elements.Count()}");
 
-            Page[] pages = _scanner.ScanMainPageHeaderLinks(headerGroup).ToArray();
-
-            logger.LogInformation("Добавление ссылок с навигатора главной страницы в БД...");
-            foreach(var p in pages)
-                _context.AddPage(p);
-
+            logger.LogInformation("Добавление элементов в базу данных...");
+            _context.AddRange(Pages.Elements);
+            _context.AddRange(PageGroups.Elements);
             _context.SaveChanges();
-            logger.LogInformation("Добавление ссылок с навигатора главной страницы в БД успешно завершено");
+            logger.LogInformation("Добавление элементов в базу данных успешно завершено");
+
+
 
             return 0;
 
         }
+
+        private static void ScanPageTree(Page page)
+        {
+            List<Page> subpages = _scanner.ScanPageLinks(page) as List<Page>;
+
+            foreach (var p in subpages)
+            {
+                bool untoched = !Pages.Check(p);
+                Pages.Add(p);
+                if (untoched)
+                    _scanner.ScanPageLinks(page);
+            }
+        }
+
+
+
+
+
+
+
 
         // private static void SingleModeScan()
         // {

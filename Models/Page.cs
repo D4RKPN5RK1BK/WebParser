@@ -6,7 +6,7 @@ using WebParser.Interfaces;
 
 namespace WebParser.Models
 {
-    public class Page : IHeirarchy<Page>
+    public class Page : IHeirarchy<Page>, IComparable
     {
         private string _legasyURL;
 
@@ -90,5 +90,15 @@ namespace WebParser.Models
 
         public Page Parent { get; set; }
         public IEnumerable<Page> Children { get; set; }
+
+        public int CompareTo(object? obj)
+        {
+            Page other = obj as Page;
+
+            if (other.Name != this.Name || other.LegasyURL != this.LegasyURL)
+                return 1;
+
+            return 0;
+        }
     }
 }

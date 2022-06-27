@@ -34,6 +34,7 @@ namespace WebPareser {
             logger = loggerFactory.CreateLogger<Program>();
 
             context = new DatabaseContext();
+            context.Database.EnsureCreated();
 
 
             // Контроллер входящих параметров

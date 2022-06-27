@@ -78,21 +78,36 @@ namespace WebPareser.Scanner
         }
 
         /// <summary>
-        /// Возвращает все найденые группы страниц на главной странице сайта
+        /// Возвращает все найденые группы страниц на главной странице сайта вместе со сложенными в них страницами
         /// </summary>
         public IEnumerable<PageGroup> ScanMainPageGroups()
         {
+            List<PageGroup> pageGroups = new List<PageGroup>();
+            _logger.LogInformation("Сканирование нижнего меню главной страницы...");
 
-            return new List<PageGroup>();
-        }
+            try
+            {
+                var path = Regex.Match(document.Url, @"^\S*/").Value;
+                var sections = document.QuerySelectorAll(PAGE_GROUPS);
 
-        /// <summary>
-        /// Возвращает все найденые группы страниц на главной странице сайта вместе со сложенными в них страницами
-        /// </summary>
-        public IEnumerable<PageGroup> ScanMainPageGroupsWithLinks()
-        {
+                foreach (var s in sections)
+                {
+                    if (s.GetAttribute("id") == "zag")
+                        pageGroups.Add(new PageGroup(s.TextContent));
+                    else
+                    {
 
-            return new List<PageGroup>();
+                    }
+                    foreach (var link in s.Children)
+                        pageGroups.Last().Pages.Add(new Page(link.TextContent, path + link.GetAttribute("href")));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical($"Сканирование нижней панели на главной странице завершилось с ошибкой:\n{ex.Message}");
+            }
+            _logger.LogInformation("Сканирование нижнего меню главной страницы успешно завершено.");
+            return pageGroups;
         }
 
         /// <summary>
@@ -100,8 +115,32 @@ namespace WebPareser.Scanner
         /// </summary>
         public IEnumerable<Page> ScanPageLinks(Page page)
         {
+            List<Page> pages = new List<Page>();
 
-            return new List<Page>();
+            try {
+                document = browserContext.OpenAsync(page.LegasyURL).Result;
+                IHtmlCollection<IElement> links = document.QuerySelectorAll(NAV);
+
+                foreach (var link in links)
+                {
+                    Page p = new Page(link.TextContent, page.LegasyPath + link.GetAttribute("href"), page.PageGroupId, page.Id);
+
+                    if (link.GetAttribute("href").Contains(".ru"))
+                        p.LegasyURL = link.GetAttribute("href");
+
+                    while (Regex.IsMatch(p.LegasyURL, @"[^\/]*\/\.\.\/"))
+                        p.LegasyURL = p.LegasyURL.Replace(Regex.Match(p.LegasyURL, @"[^\/]*\/\.\.\/").Value, "");
+
+                    pages.Add(p);
+                }
+            }
+            catch(Exception ex) {
+                 _logger.LogCritical($"Сканирование ссылок на странице {page.Name} завершилось с ошибкой:\n{ex.Message}");
+            }
+
+           
+
+			return pages;
         }
 
         /// <summary>

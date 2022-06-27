@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace WebParser.Models
 {
-    public class PageGroup
+    public class PageGroup : IComparable
     {
         [Required]
         public string Id { get; set; }
@@ -38,5 +38,17 @@ namespace WebParser.Models
             Pages = new List<Page>();
         }
 
+        public int CompareTo(object? obj)
+        {
+            if (obj.GetType() != this.GetType())
+                return 1;
+
+            PageGroup other = obj as PageGroup;
+
+            if (other.Name != this.Name)
+                return 1;
+
+            return 0;
+        }
     }
 }
