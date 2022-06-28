@@ -2,7 +2,7 @@
 using WebPareser.Data;
 using WebPareser.Models;
 using WebParser.Models;
-using WebPareser.Scanner;
+using WebParser.Scanner;
 using WebParser.CommandVerbs;
 using Microsoft.Data.Sqlite;
 

@@ -1,11 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using WebPareser.Data;
 using WebParser.CommandVerbs;
+using WebParser.Models;
+using WebParser.Scanner;
 
 namespace WebParser.CommandExecution
 {
@@ -14,19 +11,25 @@ namespace WebParser.CommandExecution
         private static DatabaseContext _context;
         private static ILoggerFactory _loggerFactory;
         private static ILogger _logger;
+        private static ScannerApi _scanner;
 
         public static int Run(ScanPageDataVerb options, DatabaseContext context, ILogger logger)
         {
             _context = context;
             _logger = logger;
+            _scanner = new ScannerApi(_logger);
 
-          
+            Page[] pages = _context.Pages.ToArray();
 
-            return OptionsResponce();
-        }
+            for (int i = 0; i < pages.Count(); i++)
+                pages[i] = _scanner.ScanPageContent(pages[i]);
 
-        private static int OptionsResponce()
-        {
+            if (options.Files)
+                for (int i = 0; i < pages.Count(); i++)
+                    _scanner.ScanPageFiles(pages[i]);
+
+            _context.UpdateRange(pages);
+
             return 0;
         }
     }

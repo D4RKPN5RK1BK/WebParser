@@ -14,7 +14,15 @@ namespace WebParser.Models
 
         public string? Title { get; set; }
 
-        public string? Header { get; set; }
+        private string _header;
+        public string? Header 
+        {
+            get { return _header; }
+            set {
+                _header = value;
+                NormalizedHeader = _header.Normalize().ToUpper();
+            }
+        }
         public string? NormalizedHeader { get; set; }
 
 

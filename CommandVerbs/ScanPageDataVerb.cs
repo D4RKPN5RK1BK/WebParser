@@ -10,11 +10,8 @@ namespace WebParser.CommandVerbs
     [Verb("scancontent", HelpText = "Сканирует информацию со страниц в базе данных")]
     internal class ScanPageDataVerb
     {
-        [Option('l', "link", HelpText = "Ссылка на конкретную страницу для сканирования")]
-        public bool AllPages { get; set; }
-
-        [Option('r', "raw", HelpText = "Scans page content as raw html")]
-        public bool Raw { get; set; }
+        [Option('f', "files", HelpText = "Дополнительно собирает данные о файлах на всех страницах")]
+        public bool Files { get; set; }
 
     }
 }

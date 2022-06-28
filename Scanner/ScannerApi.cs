@@ -1,10 +1,11 @@
+using System.Net;
 using System.Text.RegularExpressions;
 using AngleSharp;
 using AngleSharp.Dom;
 using Microsoft.Extensions.Logging;
 using WebParser.Models;
 
-namespace WebPareser.Scanner
+namespace WebParser.Scanner
 {
     public class ScannerApi
     {
@@ -23,6 +24,15 @@ namespace WebPareser.Scanner
 
         // Корневой каталог
         public const string ADDRESS = "http://goreftinsky.ru";
+
+        // Контент страницы
+        public const string PAGE_CONTENT = "#content";
+
+        // Заголовок страницы
+        public const string PAGE_HEADER = "#header";
+
+        // Полседняя дата обновление страницы
+        public const string PAGE_UPDATE = "#actual";
 
         // Стартовая страница
         public const string INDEX = "/";
@@ -94,11 +104,11 @@ namespace WebPareser.Scanner
                 {
                     if (s.GetAttribute("id") == "zag")
                         pageGroups.Add(new PageGroup(s.TextContent));
-                    
+
                     if (s.GetAttribute("id") == "link")
                         foreach (var link in s.Children)
                             pageGroups.Last().Pages.Add(new Page(link.TextContent, path + link.GetAttribute("href"), pageGroups.Last().Id));
-                    
+
                 }
             }
             catch (Exception ex)
@@ -131,7 +141,7 @@ namespace WebPareser.Scanner
 
                         if (link.GetAttribute("href")!.Contains(".ru"))
                             p.LegasyURL = link.GetAttribute("href");
-                        
+
                         while (Regex.IsMatch(p.LegasyURL!, @"[^\/]*\/\.\.\/"))
                             p.LegasyURL = p.LegasyURL!.Replace(Regex.Match(p.LegasyURL, @"[^\/]*\/\.\.\/").Value, "");
 
@@ -152,21 +162,50 @@ namespace WebPareser.Scanner
         }
 
         /// <summary>
-        /// Возвращает все найденные ссылки в навигаторе и контенте на странице 
-        /// </summary>
-        public IEnumerable<Page> ScanPageLinks(string path)
-        {
-
-            return new List<Page>();
-        }
-
-        /// <summary>
         /// Возвращает передоваемую страницу с обновленным контентом (заголовок, дата обновления, содержание итд)
         /// </summary>
         public Page ScanPageContent(Page page)
         {
+            _logger.LogInformation($"Сканирование \"{page.LinkName}\".");
+            try
+            {
+                document = browserContext.OpenAsync(page.LegasyURL).Result;
+                var pageContent = document.QuerySelector(PAGE_CONTENT);
 
-            return new Page();
+                page.LegasyContent = pageContent.TextContent;
+                page.Header = document.QuerySelector(PAGE_HEADER).TextContent;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical($"Ошибка при сканировании \"{page.LinkName}\":\n{ex.Message}");
+            }
+            return page;
+        }
+
+        /// <summary>
+        /// Сканирует выбранную страницу и сохраняет все файлы страницы в папку с названием id страницы
+        /// </summary>
+        public void ScanPageFiles(Page page)
+        {
+            document = browserContext.OpenAsync(page.LegasyURL).Result;
+            var pageContent = document.QuerySelector(PAGE_CONTENT);
+            var pageLinks = pageContent.QuerySelectorAll("a");
+            var pageImages = pageContent.QuerySelectorAll("img");
+            using WebClient client = new WebClient();
+
+            foreach (var l in pageLinks)
+            {
+                if (Regex.IsMatch(l.GetAttribute("href"), @"(\.pdf|\.doc|\.xlsx|\.odt|\.docx|\.pptx)$"))
+                    client.DownloadFileAsync(new Uri(l.SourceReference.ToString()), $"{Environment.SpecialFolder.MyDocuments}/GoreftinskyData/Upload/Files/Pages/{page.Id}/");
+            }
+        }
+
+        /// <summary>
+        /// Возвращает все найденные ссылки в навигаторе и контенте на странице 
+        /// </summary>
+        public IEnumerable<Page> ScanPageLinks(string path)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -174,8 +213,7 @@ namespace WebPareser.Scanner
         /// </summary>
         public Page ScanPageContent(string path)
         {
-
-            return new Page();
+            throw new NotImplementedException();
         }
 
     }
