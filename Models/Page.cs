@@ -19,7 +19,7 @@ namespace WebParser.Models
         {
             get { return _header; }
             set {
-                _header = value;
+                _header = value.ToUpper().First() + value.Remove(0, 1).ToLower(); ;
                 NormalizedHeader = _header.Normalize().ToUpper();
             }
         }

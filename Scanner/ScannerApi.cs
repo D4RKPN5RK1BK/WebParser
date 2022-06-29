@@ -20,16 +20,16 @@ namespace WebParser.Scanner
         public const string PAGE_GROUPS = "#header3 div div";
 
         // Ссылки внутри контента страницы
-        public const string PAGE_CONTENT_LINKS = ".content .page-links a";
+        public const string PAGE_CONTENT_LINKS = ".page-links a";
 
         // Корневой каталог
         public const string ADDRESS = "http://goreftinsky.ru";
 
         // Контент страницы
-        public const string PAGE_CONTENT = "#content";
+        public const string PAGE_CONTENT = "#main";
 
         // Заголовок страницы
-        public const string PAGE_HEADER = "#header";
+        public const string PAGE_HEADER = "#header_data";
 
         // Полседняя дата обновление страницы
         public const string PAGE_UPDATE = "#actual";
@@ -75,7 +75,8 @@ namespace WebParser.Scanner
                 var headerLinks = document.QuerySelectorAll(HEADER_PAGES);
 
                 foreach (var link in headerLinks)
-                    pages.Add(new Page(link.TextContent, documentPath + link.GetAttribute("href"), headerGroup.Id));
+                    if (!Regex.IsMatch(link.GetAttribute("href"), @"http:\/\/|.pdf"))
+                        pages.Add(new Page(link.TextContent, documentPath + link.GetAttribute("href"), headerGroup.Id));
             }
             catch (NullReferenceException ex)
             {
@@ -107,7 +108,8 @@ namespace WebParser.Scanner
 
                     if (s.GetAttribute("id") == "link")
                         foreach (var link in s.Children)
-                            pageGroups.Last().Pages.Add(new Page(link.TextContent, path + link.GetAttribute("href"), pageGroups.Last().Id));
+                            if (!Regex.IsMatch(link.GetAttribute("href"), @"http:\/\/|.pdf"))
+                                pageGroups.Last().Pages.Add(new Page(link.TextContent, path + link.GetAttribute("href"), pageGroups.Last().Id));
 
                 }
             }
@@ -126,34 +128,47 @@ namespace WebParser.Scanner
         {
             List<Page> pages = new List<Page>();
 
-            _logger.LogInformation(page.LegasyURL + (page.PageGroupId == null ? "\n НЕ НАЙДЕНА ГРУППА СТРАНИЦЫ" : ""));
+            _logger.LogInformation(page.LegasyURL);
 
             try
             {
-                if (Regex.IsMatch(page.LegasyURL!, $@"{ADDRESS}"))
-                {
-                    document = browserContext.OpenAsync(page.LegasyURL!).Result;
-                    IHtmlCollection<IElement> links = document.QuerySelectorAll($"{HEADER_PAGES}, {PAGE_CONTENT_LINKS}");
+                document = browserContext.OpenAsync(page.LegasyURL!).Result;
+                var links = document.QuerySelectorAll($"{HEADER_PAGES}");
 
-                    foreach (var link in links)
+                foreach (var link in links)
+                {
+                    if (!Regex.IsMatch(link.GetAttribute("href"), @"http:\/\/|.pdf"))
                     {
                         Page p = new Page(link.TextContent, page.LegasyPath + link.GetAttribute("href"), page.PageGroupId!, page.Id!);
 
-                        if (link.GetAttribute("href")!.Contains(".ru"))
-                            p.LegasyURL = link.GetAttribute("href");
+                        while (Regex.IsMatch(p.LegasyURL!, @"[^\/]*\/\.\.\/"))
+                            p.LegasyURL = p.LegasyURL!.Replace(Regex.Match(p.LegasyURL, @"[^\/]*\/\.\.\/").Value, String.Empty);
+
+                        pages.Add(p);
+
+                    }
+                }
+
+                var contentLinks = document.QuerySelectorAll($"{PAGE_CONTENT_LINKS}");
+                foreach (var link in contentLinks)
+                {
+                    if (link.HasAttribute("href"))
+                    {
+                        // _logger.LogWarning(link.InnerHtml);
+                        Page p = new Page(link.TextContent, page.LegasyPath + link.GetAttribute("href"), page.PageGroupId!, page.Id!);
 
                         while (Regex.IsMatch(p.LegasyURL!, @"[^\/]*\/\.\.\/"))
-                            p.LegasyURL = p.LegasyURL!.Replace(Regex.Match(p.LegasyURL, @"[^\/]*\/\.\.\/").Value, "");
+                            p.LegasyURL = p.LegasyURL!.Replace(Regex.Match(p.LegasyURL, @"[^\/]*\/\.\.\/").Value, String.Empty);
 
-                        // _logger.LogInformation("\t" + p.LegasyURL);
                         pages.Add(p);
+
                     }
                 }
 
             }
             catch (Exception ex)
             {
-                _logger.LogCritical($"Сканирование ссылок на странице {page.LinkName} завершилось с ошибкой:\n{ex.Message}");
+                _logger.LogCritical($"Сканирование ссылок на страницке завершилось с ошибкой!\nИмя:{page.LinkName}\nСсылка:{page.LegasyURL}\nExceptionMessage:{ex.Message}");
             }
 
 
@@ -170,16 +185,31 @@ namespace WebParser.Scanner
             try
             {
                 document = browserContext.OpenAsync(page.LegasyURL).Result;
-                var pageContent = document.QuerySelector(PAGE_CONTENT);
+                var meta = document.QuerySelectorAll("meta");
+                string tags = "";
+                string description = "";
+                foreach (var m in meta)
+                {
+                    if (m.GetAttribute("name") == "Keywords")
+                        tags = m.GetAttribute("content");
 
-                page.LegasyContent = pageContent.TextContent;
-                page.Header = document.QuerySelector(PAGE_HEADER).TextContent;
+                    if (m.GetAttribute("name") == "Description")
+                        description = m.GetAttribute("content");
+                }
+
+
+                page.LegasyContent = document.QuerySelector(PAGE_CONTENT).InnerHtml.Trim();
+                page.Header = document.QuerySelector(PAGE_HEADER).TextContent.Trim();
+                page.Title = document.Title;
+                page.Tags = tags.Trim();
+                page.Description = description.Trim();
             }
             catch (Exception ex)
             {
-                _logger.LogCritical($"Ошибка при сканировании \"{page.LinkName}\":\n{ex.Message}");
+                _logger.LogCritical($"\nОшибка при сканировании данных!\nИмя:{page.LinkName}\nСсылка:{page.LegasyURL}\nExceptionMessage:{ex.Message}");
             }
             return page;
+
         }
 
         /// <summary>

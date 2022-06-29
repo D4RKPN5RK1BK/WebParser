@@ -24,11 +24,12 @@ namespace WebParser.CommandExecution
             for (int i = 0; i < pages.Count(); i++)
                 pages[i] = _scanner.ScanPageContent(pages[i]);
 
-            if (options.Files)
-                for (int i = 0; i < pages.Count(); i++)
-                    _scanner.ScanPageFiles(pages[i]);
+            // if (options.Files)
+            //     for (int i = 0; i < pages.Count(); i++)
+            //         _scanner.ScanPageFiles(pages[i]);
 
             _context.UpdateRange(pages);
+            _context.SaveChanges();
 
             return 0;
         }
