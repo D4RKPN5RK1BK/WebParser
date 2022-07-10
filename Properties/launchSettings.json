@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "WebParser": {
+      "commandName": "Project",
+      "commandLineArgs": "scancontent -f"
+    }
+  }
+}
