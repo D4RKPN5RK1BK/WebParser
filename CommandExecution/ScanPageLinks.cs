@@ -62,8 +62,8 @@ namespace WebParser.CommandExecution
                 ScanPage(Pages.Elements[i]);
             }
 
-            _logger.LogWarning($"Количество страниц\t: {Pages.Elements.Count()}");
-            _logger.LogWarning($"Количество груп\t: {PageGroups.Elements.Count()}");
+            _logger.LogWarning($"Количество найденых страниц\t: {Pages.Elements.Count()}");
+            _logger.LogWarning($"Количество найденых груп\t: {PageGroups.Elements.Count()}");
 
             UpdateDatabase();
 
