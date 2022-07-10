@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using System.Net;
 using System.Text.RegularExpressions;
 using AngleSharp;
@@ -219,17 +218,18 @@ namespace WebParser.Scanner
 
         }
 
+        // Слишком много всего на одну функцию!!!
         /// <summary>
         /// Сканирует выбранную страницу и сохраняет все файлы страницы в папку с названием id страницы
         /// </summary>
-        public void ScanPageFiles(Page page)
+        public Page ScanPageFiles(Page page)
         {
-            _logger.LogInformation($"Копирование файлов из \"{page.Header}\"");
+            _logger.LogInformation($"Копирование файлов из \"{page.Header}\" id: {page.Id}");
             try
             {
                 document = browserContext.OpenAsync(page.LegasyURL).Result;
                 var pageContent = document.QuerySelector(PAGE_CONTENT);
-                var pageLinks = pageContent.QuerySelectorAll("a");
+                var pageLinks = pageContent.QuerySelectorAll($"a");
                 var pageImages = pageContent.QuerySelectorAll("img");
                 var pageFileDir = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}/GoreftinskyData/Files/Pages/{page.Id}";
                 var pageFileLinks = pageLinks.Where(o => Regex.IsMatch(o.GetAttribute("href"), @"(\.pdf|\.doc|\.xlsx|\.odt|\.docx|\.pptx)$"));
@@ -245,6 +245,14 @@ namespace WebParser.Scanner
                     DownloadFile(page.LegasyPath + l.GetAttribute("href"), page.Id);
                 }
 
+                for (int i = 0; i < pageLinks.Count(); i++)
+                {
+                    var fileName = Regex.Match(pageLinks[i].GetAttribute("href"), @"([a-zA-Z0-9_]*)\.[a-zA-Z0-9]*$").Value;
+                    if (Regex.IsMatch(pageLinks[i].GetAttribute("href"), @"(\.pdf|\.doc|\.xlsx|\.odt|\.docx|\.pptx)$"))
+                        pageLinks[i].SetAttribute("href", $"/Public/Pages/{page.Id}/{fileName}");
+                }
+                page.LegasyContentWithUpdatedFiles = pageContent.InnerHtml.ToString().Trim();
+
             }
             catch(NullReferenceException ex)
             {
@@ -255,7 +263,8 @@ namespace WebParser.Scanner
                 _logger.LogWarning($"Не удалось получить доступ к ресурсу!");
 
             }
-            
+
+            return page;
         }
 
         /// <summary>
@@ -282,7 +291,7 @@ namespace WebParser.Scanner
         /// <returns>Возвращает новую ссылку на файл.</returns>
         public async Task<string> DownloadFile(string source, string id)
         {
-            _logger.LogInformation($"Загрузка файла \"P{source}\"...");
+            _logger.LogInformation($"Загрузка файла \"{source}\"...");
 
             var fileInfo = Regex.Match(source, @"([a-zA-Z0-9_]*)\.[a-zA-Z0-9]*$").Value;
             var resultFileDir = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}/GoreftinskyData/Files/Pages/{id}";
@@ -296,11 +305,10 @@ namespace WebParser.Scanner
                 var fileStream = File.Create($"{resultFileDir}/{fileInfo}");
 
                 stream.CopyTo(fileStream);
-
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Не удалось скачать \"{resultFileDir}/{fileInfo}\" файл по следующей причине:\n{ex.Message}");
+                _logger.LogError($"Не удалось скачать\n\t{source}\n\t\"{resultFileDir}/{fileInfo}\" файл по следующей причине:\n{ex.Message}");
             }
 
             _logger.LogInformation($"Копирование файла \"{fileInfo}\" успешно завершено");
