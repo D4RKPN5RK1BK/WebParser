@@ -1,48 +1,42 @@
-﻿using WebPareser.Data;
+﻿using AngleSharp;
+using WebPareser.Data;
 using Microsoft.Extensions.Logging;
 using CommandLine;
+using Microsoft.Extensions.Configuration;
 using WebParser.CommandVerbs;
 using WebParser.CommandExecution;
+using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
-namespace WebPareser
+namespace WebPareser;
+class Program
 {
-    class Program
+    static async Task Main(string[] args)
     {
+        var configBuilder = new ConfigurationBuilder();
+        var config = configBuilder.AddJsonFile("../appsetings.json");
 
-        private static DatabaseContext context;
-        private static ILoggerFactory loggerFactory;
-        private static ILogger logger;
-
-        static async Task Main(string[] args)
+        var loggerFactory = LoggerFactory.Create(lc =>
         {
-
-            // Подключение к файлу конфигурации
-            // using IHost host = Host.CreateDefaultBuilder(args).Build();
-            // host.Run();
-
-            // Добавление логгера
-            loggerFactory = LoggerFactory.Create(config =>
+            lc.AddSimpleConsole(options =>
             {
-                config.AddSimpleConsole(options =>
-                {
-                    options.SingleLine = true;
-                    options.IncludeScopes = false;
-                });
+                options.SingleLine = true;
+                options.IncludeScopes = false;
             });
+        });
 
-            logger = loggerFactory.CreateLogger<Program>();
+        var logger = loggerFactory.CreateLogger<Program>();
 
-            context = new DatabaseContext();
+        var context = new DatabaseContext();
 
 
-            // Контроллер входящих параметров
-            Parser.Default.ParseArguments<ScanPageDataVerb, CreateMapVerb, ScanPageLinksVerb>(args)
-                .MapResult(
-                    (ScanPageDataVerb options) => ScanPageData.Run(options, context, logger),
-                    (CreateMapVerb options) => CreateMap.Run(options, context, logger),
-                    (ScanPageLinksVerb options) => ScanPageLinks.Run(options, context, logger),
-                    error => 1
-                );
-        }
+        // Контроллер входящих параметров
+        Parser.Default.ParseArguments<ScanPageDataVerb, CreateMapVerb, ScanPageLinksVerb>(args)
+            .MapResult(
+                (ScanPageDataVerb options) => ScanPageData.Run(options, context, logger),
+                (CreateMapVerb options) => CreateMap.Run(options, context, logger),
+                (ScanPageLinksVerb options) => ScanPageLinks.Run(options, context, logger),
+                error => 1
+            ); 
     }
 }
+
