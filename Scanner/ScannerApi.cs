@@ -109,10 +109,12 @@ namespace WebParser.Scanner
                         pageGroups.Add(new PageGroup(s.TextContent));
 
                     if (s.GetAttribute("id") == "link")
+                    {
                         foreach (var link in s.Children)
                             if (!Regex.IsMatch(link.GetAttribute("href"), @"http:\/\/|.pdf"))
                                 pageGroups.Last().Pages.Add(new Page(link.TextContent, path + link.GetAttribute("href"), pageGroups.Last().Id));
-
+                    }
+                    
                 }
             }
             catch (Exception ex)
@@ -147,7 +149,6 @@ namespace WebParser.Scanner
                             p.LegasyURL = p.LegasyURL!.Replace(Regex.Match(p.LegasyURL, @"[^\/]*\/\.\.\/").Value, String.Empty);
 
                         pages.Add(p);
-
                     }
                 }
 
@@ -163,7 +164,6 @@ namespace WebParser.Scanner
                             p.LegasyURL = p.LegasyURL!.Replace(Regex.Match(p.LegasyURL, @"[^\/]*\/\.\.\/").Value, String.Empty);
 
                         pages.Add(p);
-
                     }
                 }
 
@@ -232,7 +232,8 @@ namespace WebParser.Scanner
                 var pageLinks = pageContent.QuerySelectorAll($"a");
                 var pageImages = pageContent.QuerySelectorAll("img");
                 var pageFileDir = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}/GoreftinskyData/Files/Pages/{page.Id}";
-                var pageFileLinks = pageLinks.Where(o => Regex.IsMatch(o.GetAttribute("href"), @"(\.pdf|\.doc|\.xlsx|\.odt|\.docx|\.pptx)$"));
+                var pageFileLinks = pageLinks.Where(o => Regex.IsMatch(o.GetAttribute("href"), @"(\.pdf|\.doc|\.xlsx|\.odt|\.docx|\.pptx|\.jpg|\.png|\.jpeg|\.zip|\.rar|\.7z)$"));
+                var pageImagesLinks = pageImages.Where(o => Regex.IsMatch(o.GetAttribute("src"), @"(\.jpg|\.png|\.jpeg)$"));
 
                 _logger.LogInformation($"\tНайдено файлов: {pageFileLinks.Count()}");
 
@@ -244,11 +245,20 @@ namespace WebParser.Scanner
 
                     DownloadFile(page.LegasyPath + l.GetAttribute("href"), page.Id);
                 }
+                
+                foreach (var l in pageImagesLinks)
+                {
+                    var fileName = Regex.Match(l.GetAttribute("src"), @"([a-zA-Z0-9_]*)\.[a-zA-Z0-9]*$").Value;
+
+                    _logger.LogInformation($"\n\tЗагрузка из \"{page.LegasyPath + l.GetAttribute("src")}\"\n\tВ \"{pageFileDir}/{fileName}\"");
+
+                    DownloadFile(page.LegasyPath + l.GetAttribute("src"), page.Id);
+                }
 
                 for (int i = 0; i < pageLinks.Count(); i++)
                 {
                     var fileName = Regex.Match(pageLinks[i].GetAttribute("href"), @"([a-zA-Z0-9_]*)\.[a-zA-Z0-9]*$").Value;
-                    if (Regex.IsMatch(pageLinks[i].GetAttribute("href"), @"(\.pdf|\.doc|\.xlsx|\.odt|\.docx|\.pptx)$"))
+                    if (Regex.IsMatch(pageLinks[i].GetAttribute("href"), @"(\.pdf|\.doc|\.xlsx|\.odt|\.docx|\.pptx|\.jpg|\.png|\.jpeg|\.zip|\.rar|\.7z)$"))
                         pageLinks[i].SetAttribute("href", $"/Public/Pages/{page.Id}/{fileName}");
                 }
                 page.LegasyContentWithUpdatedFiles = pageContent.InnerHtml.ToString().Trim();
